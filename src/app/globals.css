@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  min-height: 100dvh;
+  font-family: var(--font-noto-sans-jp), ui-sans-serif, system-ui, sans-serif;
+}

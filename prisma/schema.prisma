@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  shareEnabled Boolean  @default(false)
+  shareToken   String?  @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  players Player[]
+  rules   Rule[]
+  games   Game[]
+}
+
+model Player {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name             String
+  isRegularMember  Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  gamePlayers GamePlayer[]
+
+  @@index([userId])
+}
+
+model Rule {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  mode          String
+  startingScore Int
+  umaFirst      Int      @default(20)
+  umaSecond     Int      @default(10)
+  umaThird      Int      @default(-10)
+  umaFourth     Int      @default(-20)
+  oka           Int      @default(10)
+  ratePer1000   Float    @default(1)
+  useUma        Boolean  @default(true)
+  useOka        Boolean  @default(true)
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  games Game[]
+
+  @@index([userId])
+}
+
+model Game {
+  id                 String   @id @default(cuid())
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mode               String   @default("sanma")
+  ruleId             String?
+  rule               Rule?    @relation(fields: [ruleId], references: [id], onDelete: SetNull)
+  startingScore      Int      @default(35000)
+  totalScorePerRound Int      @default(105000)
+  umaFirst           Int      @default(20)
+  umaSecond          Int      @default(10)
+  umaThird           Int      @default(-10)
+  umaFourth          Int      @default(-20)
+  oka                Int      @default(10)
+  ratePer1000        Float    @default(1)
+  useUma             Boolean  @default(true)
+  useOka             Boolean  @default(true)
+  playedAt           DateTime
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  players GamePlayer[]
+  rounds  Round[]
+
+  @@index([userId])
+}
+
+model GamePlayer {
+  id       String @id @default(cuid())
+  gameId   String
+  game     Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  playerId String
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Restrict)
+  seat     Int
+
+  roundScores RoundScore[]
+}
+
+model Round {
+  id     String @id @default(cuid())
+  gameId String
+  game   Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  number Int
+
+  roundScores RoundScore[]
+}
+
+model RoundScore {
+  id           String     @id @default(cuid())
+  roundId      String
+  round        Round      @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  gamePlayerId String
+  gamePlayer   GamePlayer @relation(fields: [gamePlayerId], references: [id], onDelete: Cascade)
+  score        Int
+}
