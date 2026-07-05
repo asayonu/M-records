@@ -8,6 +8,8 @@ import {
 } from "@/lib/records/actions";
 import { configFromRule } from "@/lib/records/gameConfig";
 import {
+  calcAdjustedHanchanDiff,
+  calcMoneyFromPoints,
   formatMoney,
   formatRuleSettingsSummary,
 } from "@/lib/records/ruleScoring";
@@ -65,13 +67,11 @@ function pickDefaultRule(rules: RuleOption[]): RuleOption | undefined {
   );
 }
 
-function emptyScores(
-  startingScore: number,
-  playerCount: number,
-  roundCount: number,
-) {
+const UNSET_SCORE = -1;
+
+function blankScores(playerCount: number, roundCount: number) {
   return Array.from({ length: roundCount }, () =>
-    Array.from({ length: playerCount }, () => startingScore),
+    Array.from({ length: playerCount }, () => UNSET_SCORE),
   );
 }
 
@@ -113,9 +113,7 @@ export default function GameForm({ date, players, rules, edit }: Props) {
   );
   const [scores, setScores] = useState<number[][]>(() => {
     if (edit?.scores.length) return edit.scores.map((row) => [...row]);
-    return config
-      ? emptyScores(config.startingScore, config.playerCount, 1)
-      : [[]];
+    return config ? blankScores(config.playerCount, 1) : [[]];
   });
   const [selectedPlayerIds, setSelectedPlayerIds] = useState<string[]>(() => {
     if (edit?.playerIds.length) return [...edit.playerIds];
@@ -128,7 +126,13 @@ export default function GameForm({ date, players, rules, edit }: Props) {
 
   const liveTotals = useMemo(() => {
     if (!config || scores.length === 0) return null;
-    return computeScoresTotals(scores, config);
+    const completeRows = scores.filter(
+      (row) =>
+        row.length === config.playerCount &&
+        row.every((score) => score >= 0),
+    );
+    if (completeRows.length === 0) return null;
+    return computeScoresTotals(completeRows, config);
   }, [scores, config]);
 
   function switchRule(nextRuleId: string) {
@@ -137,9 +141,7 @@ export default function GameForm({ date, players, rules, edit }: Props) {
     if (!rule) return;
     const nextConfig = configFromRule(rule);
     setRuleId(nextRuleId);
-    setScores(
-      emptyScores(nextConfig.startingScore, nextConfig.playerCount, roundCount),
-    );
+    setScores(blankScores(nextConfig.playerCount, roundCount));
     setSelectedPlayerIds(pickDefaultPlayerIds(players, nextConfig.playerCount));
   }
 
@@ -150,18 +152,15 @@ export default function GameForm({ date, players, rules, edit }: Props) {
     setScores((prev) => {
       const copy = [...prev];
       while (copy.length < next) {
-        copy.push(
-          Array.from({ length: config.playerCount }, () =>
-            config.startingScore,
-          ),
-        );
+        copy.push(Array.from({ length: config.playerCount }, () => UNSET_SCORE));
       }
       return copy.slice(0, next);
     });
   }
 
   function updateScore(roundIndex: number, seat: number, value: string) {
-    const fullScore = parseScoreShortInput(value);
+    const fullScore =
+      value === "" ? UNSET_SCORE : parseScoreShortInput(value);
     setScores((prev) => {
       const copy = prev.map((row) => [...row]);
       copy[roundIndex][seat] = fullScore;
@@ -335,11 +334,11 @@ export default function GameForm({ date, players, rules, edit }: Props) {
 
         <div className="space-y-4">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[280px] table-fixed text-sm">
+            <table className="w-full min-w-[28rem] table-fixed text-sm">
               <colgroup>
                 <col className="w-[4.75rem]" />
                 {Array.from({ length: config.playerCount }, (_, seat) => (
-                  <col key={seat} />
+                  <col key={seat} className="w-[7.5rem]" />
                 ))}
                 <col className="w-[3.5rem]" />
               </colgroup>
@@ -359,8 +358,28 @@ export default function GameForm({ date, players, rules, edit }: Props) {
               </thead>
               <tbody>
                 {scores.map((row, roundIndex) => {
-                  const sum = row.reduce((a, b) => a + b, 0);
-                  const sumOk = sum === config.totalScorePerRound;
+                  const sum = row.reduce(
+                    (a, b) => a + (b < 0 ? 0 : b),
+                    0,
+                  );
+                  const rowComplete = row.every((score) => score >= 0);
+                  const sumOk =
+                    rowComplete && sum === config.totalScorePerRound;
+                  const rowPts = rowComplete
+                    ? row.map((_, seat) =>
+                        calcMoneyFromPoints(
+                          calcAdjustedHanchanDiff(
+                            row,
+                            seat,
+                            config.startingScore,
+                            config.scoring,
+                            scoringFlags,
+                            config.playerCount,
+                          ),
+                          config.scoring.ratePer1000,
+                        ),
+                      )
+                    : null;
                   return (
                     <tr
                       key={roundIndex}
@@ -369,29 +388,45 @@ export default function GameForm({ date, players, rules, edit }: Props) {
                       <td className="px-3 py-2 font-medium text-stone-700">
                         {roundIndex + 1}
                       </td>
-                      {row.map((score, seat) => (
-                        <td key={seat} className="px-2 py-2">
-                          <input
-                            type="hidden"
-                            name={`round_${roundIndex}_score_${seat}`}
-                            value={score}
-                          />
-                          <input
-                            type="number"
-                            min={0}
-                            step={1}
-                            value={scoreShortInputValue(score)}
-                            onChange={(e) =>
-                              updateScore(roundIndex, seat, e.target.value)
-                            }
-                            className="w-full rounded-lg border border-stone-300 px-2 py-1.5 text-center outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-200"
-                          />
-                        </td>
-                      ))}
+                      {row.map((score, seat) => {
+                        const hanchanPt = rowPts?.[seat] ?? null;
+                        return (
+                          <td key={seat} className="px-2 py-2">
+                            <input
+                              type="hidden"
+                              name={`round_${roundIndex}_score_${seat}`}
+                              value={score}
+                            />
+                            <div className="flex items-center gap-1">
+                              <input
+                                type="number"
+                                min={0}
+                                step={1}
+                                placeholder="—"
+                                value={scoreShortInputValue(score)}
+                                onChange={(e) =>
+                                  updateScore(roundIndex, seat, e.target.value)
+                                }
+                                className="w-[4.25rem] shrink-0 rounded-lg border border-stone-300 px-1.5 py-1.5 text-center tabular-nums outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-200"
+                              />
+                              <span
+                                className={`w-[2.75rem] shrink-0 text-left text-[10px] font-semibold leading-tight ${
+                                  hanchanPt === null
+                                    ? "text-transparent"
+                                    : pointDiffToneClass(hanchanPt)
+                                }`}
+                                aria-hidden={hanchanPt === null}
+                              >
+                                {hanchanPt === null ? "—" : formatMoney(hanchanPt)}
+                              </span>
+                            </div>
+                          </td>
+                        );
+                      })}
                       <td
-                        className={`px-2 py-2 text-right text-xs font-medium ${sumOk ? "text-stone-500" : "text-red-600"}`}
+                        className={`px-2 py-2 text-right text-xs font-medium ${!rowComplete ? "text-stone-400" : sumOk ? "text-stone-500" : "text-red-600"}`}
                       >
-                        {formatScoreShort(sum)}
+                        {rowComplete ? formatScoreShort(sum) : "—"}
                       </td>
                     </tr>
                   );
@@ -402,11 +437,11 @@ export default function GameForm({ date, players, rules, edit }: Props) {
 
           {liveTotals && (
             <div className="overflow-x-auto rounded-xl border border-sky-300/80 bg-sky-200">
-              <table className="w-full min-w-[280px] table-fixed text-sm">
+              <table className="w-full min-w-[28rem] table-fixed text-sm">
                 <colgroup>
                   <col className="w-[4.75rem]" />
                   {Array.from({ length: config.playerCount }, (_, seat) => (
-                    <col key={seat} />
+                    <col key={seat} className="w-[7.5rem]" />
                   ))}
                   <col className="w-[3.5rem]" />
                 </colgroup>

@@ -52,8 +52,12 @@ export function validateGameInput(input: GameInput): string | null {
     if (round.scores.length !== playerCount) {
       return `第${i + 1}半荘の点数が${playerCount}人分必要です`;
     }
-    for (const score of round.scores) {
-      if (!Number.isInteger(score) || score < 0) {
+    for (let seat = 0; seat < round.scores.length; seat++) {
+      const score = round.scores[seat];
+      if (score < 0) {
+        return `第${i + 1}半荘の点数をすべて入力してください`;
+      }
+      if (!Number.isInteger(score)) {
         return `第${i + 1}半荘の点数は0以上の整数で入力してください`;
       }
     }
@@ -71,6 +75,7 @@ export function formatScoreShort(score: number): string {
 }
 
 export function scoreShortInputValue(score: number): string {
+  if (score < 0) return "";
   return String(score / 100);
 }
 

@@ -11,7 +11,7 @@ type Props = {
 
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 
-function buildCalendarDays(year: number, month: number) {
+function buildCalendarWeeks(year: number, month: number): (number | null)[][] {
   const firstDay = new Date(year, month - 1, 1);
   const lastDate = new Date(year, month, 0).getDate();
   const startWeekday = firstDay.getDay();
@@ -23,7 +23,15 @@ function buildCalendarDays(year: number, month: number) {
   for (let d = 1; d <= lastDate; d++) {
     days.push(d);
   }
-  return days;
+  while (days.length % 7 !== 0) {
+    days.push(null);
+  }
+
+  const weeks: (number | null)[][] = [];
+  for (let i = 0; i < days.length; i += 7) {
+    weeks.push(days.slice(i, i + 7));
+  }
+  return weeks;
 }
 
 function prevMonth(year: number, month: number) {
@@ -36,8 +44,26 @@ function nextMonth(year: number, month: number) {
   return { year, month: month + 1 };
 }
 
+function columnBackground(weekday: number): string {
+  if (weekday === 0) return "bg-red-100";
+  if (weekday === 6) return "bg-blue-100";
+  return "bg-white";
+}
+
+function weekdayHeaderClass(weekday: number): string {
+  if (weekday === 0) return "text-red-600";
+  if (weekday === 6) return "text-blue-700";
+  return "text-stone-500";
+}
+
+function weekdayTextClass(weekday: number): string {
+  if (weekday === 0) return "text-red-700";
+  if (weekday === 6) return "text-blue-700";
+  return "text-stone-700";
+}
+
 export default function Calendar({ year, month, gamesByDate, basePath }: Props) {
-  const days = buildCalendarDays(year, month);
+  const weeks = buildCalendarWeeks(year, month);
   const today = new Date();
   const todayStr = toDateString(today);
   const label = new Date(year, month - 1, 1).toLocaleDateString("ja-JP", {
@@ -70,49 +96,57 @@ export default function Calendar({ year, month, gamesByDate, basePath }: Props) 
         </Link>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-stone-500">
-        {WEEKDAYS.map((w, i) => (
+      <div className="grid grid-cols-7 overflow-hidden rounded-xl border border-stone-200/80">
+        {WEEKDAYS.map((w, col) => (
           <div
             key={w}
-            className={`py-1 ${i === 0 ? "text-red-500" : i === 6 ? "text-blue-500" : ""}`}
+            className={`flex min-w-0 flex-col ${columnBackground(col)}`}
           >
-            {w}
+            <div
+              className={`border-b border-stone-200/60 py-2 text-center text-xs font-semibold ${weekdayHeaderClass(col)}`}
+            >
+              {w}
+            </div>
+
+            {weeks.map((week, weekIndex) => {
+              const day = week[col];
+
+              if (day === null) {
+                return (
+                  <div
+                    key={`empty-${weekIndex}`}
+                    className="aspect-square border-b border-stone-200/40 last:border-b-0"
+                  />
+                );
+              }
+
+              const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+              const gameCount = gamesByDate.get(dateStr) ?? 0;
+              const isToday = dateStr === todayStr;
+
+              return (
+                <Link
+                  key={dateStr}
+                  href={dateHref(dateStr)}
+                  className={`relative flex aspect-square flex-col items-center justify-center border-b border-stone-200/40 text-sm transition last:border-b-0 hover:bg-black/5 ${weekdayTextClass(col)} ${
+                    isToday
+                      ? "ring-2 ring-inset ring-emerald-500"
+                      : gameCount > 0
+                        ? "font-semibold"
+                        : ""
+                  }`}
+                >
+                  <span>{day}</span>
+                  {gameCount > 0 && (
+                    <span className="mt-0.5 text-[10px] font-medium text-emerald-700">
+                      {gameCount}局
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
           </div>
         ))}
-      </div>
-
-      <div className="mt-1 grid grid-cols-7 gap-1">
-        {days.map((day, index) => {
-          if (day === null) {
-            return <div key={`empty-${index}`} className="aspect-square" />;
-          }
-
-          const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-          const gameCount = gamesByDate.get(dateStr) ?? 0;
-          const isToday = dateStr === todayStr;
-          const weekday = new Date(year, month - 1, day).getDay();
-
-          return (
-            <Link
-              key={dateStr}
-              href={dateHref(dateStr)}
-              className={`relative flex aspect-square flex-col items-center justify-center rounded-lg text-sm transition hover:bg-emerald-50 ${
-                isToday
-                  ? "ring-2 ring-emerald-500 ring-offset-1"
-                  : gameCount > 0
-                    ? "bg-emerald-50/80 font-semibold text-emerald-900"
-                    : "text-stone-700 hover:text-emerald-800"
-              } ${weekday === 0 ? "text-red-600" : weekday === 6 ? "text-blue-600" : ""}`}
-            >
-              <span>{day}</span>
-              {gameCount > 0 && (
-                <span className="mt-0.5 text-[10px] font-medium text-emerald-700">
-                  {gameCount}局
-                </span>
-              )}
-            </Link>
-          );
-        })}
       </div>
     </div>
   );
