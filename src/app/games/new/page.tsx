@@ -6,20 +6,15 @@ import PlayerRegisterForm from "@/components/PlayerRegisterForm";
 import { getAllPlayers } from "@/lib/players/actions";
 import { DEFAULT_GAME_MODE, getModeConfig } from "@/lib/records/mode";
 import { getAllRules } from "@/lib/rules/actions";
-import { formatJapaneseDate } from "@/lib/records/types";
+import { formatJapaneseDate, getTodayDateString } from "@/lib/records/types";
 
 type Props = {
   searchParams: Promise<{ date?: string }>;
 };
 
-function todayString() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-
 export default async function NewGamePage({ searchParams }: Props) {
   const params = await searchParams;
-  const date = params.date ?? todayString();
+  const date = params.date ?? getTodayDateString();
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     notFound();

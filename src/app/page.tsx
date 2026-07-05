@@ -3,7 +3,7 @@ import Calendar from "@/components/Calendar";
 import AuthNav from "@/components/AuthNav";
 import { getGamesByMonth } from "@/lib/records/actions";
 import { groupGamesByDate } from "@/lib/records/calendar";
-import { toDateString } from "@/lib/records/types";
+import { getCurrentYearMonth, getTodayDateString } from "@/lib/records/types";
 
 type Props = {
   searchParams: Promise<{ year?: string; month?: string }>;
@@ -11,9 +11,9 @@ type Props = {
 
 export default async function Home({ searchParams }: Props) {
   const params = await searchParams;
-  const now = new Date();
-  const year = params.year ? Number(params.year) : now.getFullYear();
-  const month = params.month ? Number(params.month) : now.getMonth() + 1;
+  const { year: currentYear, month: currentMonth } = getCurrentYearMonth();
+  const year = params.year ? Number(params.year) : currentYear;
+  const month = params.month ? Number(params.month) : currentMonth;
 
   const games = await getGamesByMonth(year, month);
   const grouped = groupGamesByDate(games);
@@ -22,7 +22,7 @@ export default async function Home({ searchParams }: Props) {
     gamesByDate.set(date, list.length);
   }
 
-  const todayStr = toDateString(now);
+  const todayStr = getTodayDateString();
 
   return (
     <main className="mx-auto min-h-dvh w-full max-w-lg px-4 pb-8 pt-[max(1.5rem,env(safe-area-inset-top))]">

@@ -189,29 +189,61 @@ export function calcPlayerStats(
   };
 }
 
+const APP_TIMEZONE = "Asia/Tokyo";
+
+function getDatePartsInAppTimeZone(date: Date) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: APP_TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+
+  const pick = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((part) => part.type === type)!.value);
+
+  return {
+    year: pick("year"),
+    month: pick("month"),
+    day: pick("day"),
+  };
+}
+
 export function toDateString(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
+  const { year, month, day } = getDatePartsInAppTimeZone(date);
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+export function getTodayDateString(): string {
+  return toDateString(new Date());
+}
+
+export function getCurrentYearMonth(): { year: number; month: number } {
+  const { year, month } = getDatePartsInAppTimeZone(new Date());
+  return { year, month };
+}
+
+export function parseDateAtNoon(dateStr: string): Date {
+  return new Date(`${dateStr}T12:00:00+09:00`);
 }
 
 export function parseDateString(dateStr: string): Date {
-  const [y, m, d] = dateStr.split("-").map(Number);
-  return new Date(y, m - 1, d);
+  return parseDateAtNoon(dateStr);
 }
 
 export function getMonthRange(year: number, month: number) {
-  const start = new Date(year, month - 1, 1, 0, 0, 0, 0);
-  const end = new Date(year, month, 0, 23, 59, 59, 999);
+  const monthLabel = String(month).padStart(2, "0");
+  const start = new Date(`${year}-${monthLabel}-01T00:00:00+09:00`);
+  const lastDay = new Date(year, month, 0).getDate();
+  const end = new Date(
+    `${year}-${monthLabel}-${String(lastDay).padStart(2, "0")}T23:59:59.999+09:00`,
+  );
   return { start, end };
 }
 
 export function getDayRange(dateStr: string) {
-  const start = parseDateString(dateStr);
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(start);
-  end.setHours(23, 59, 59, 999);
+  const start = new Date(`${dateStr}T00:00:00+09:00`);
+  const end = new Date(`${dateStr}T23:59:59.999+09:00`);
   return { start, end };
 }
 

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { toDateString } from "@/lib/records/types";
+import { getTodayDateString } from "@/lib/records/types";
 
 type Props = {
   year: number;
@@ -64,8 +64,7 @@ function weekdayTextClass(weekday: number): string {
 
 export default function Calendar({ year, month, gamesByDate, basePath }: Props) {
   const weeks = buildCalendarWeeks(year, month);
-  const today = new Date();
-  const todayStr = toDateString(today);
+  const todayStr = getTodayDateString();
   const label = new Date(year, month - 1, 1).toLocaleDateString("ja-JP", {
     year: "numeric",
     month: "long",

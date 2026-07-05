@@ -12,6 +12,8 @@ import {
   getGamesForPlayerForUser,
 } from "@/lib/records/queries";
 import {
+  parseDateAtNoon,
+  toDateString,
   validateGameInput,
   type GameInput,
 } from "@/lib/records/types";
@@ -136,7 +138,7 @@ export async function createGameAction(
         ratePer1000: config.scoring.ratePer1000,
         useUma: config.useUma,
         useOka: config.useOka,
-        playedAt: new Date(`${playedAt}T12:00:00`),
+        playedAt: parseDateAtNoon(playedAt),
         players: {
           create: players.map((p) => ({
             playerId: p.playerId,
@@ -190,7 +192,7 @@ export async function updateGameAction(
 
   const input: GameInput = {
     mode: config.mode,
-    playedAt: playedAt || game.playedAt.toISOString().slice(0, 10),
+    playedAt: playedAt || toDateString(game.playedAt),
     playerCount: config.playerCount,
     startingScore: config.startingScore,
     totalScorePerRound: config.totalScorePerRound,

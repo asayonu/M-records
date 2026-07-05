@@ -2,7 +2,7 @@ import Link from "next/link";
 import Calendar from "@/components/Calendar";
 import ShareShell from "@/components/ShareShell";
 import { groupGamesByDate } from "@/lib/records/calendar";
-import { toDateString } from "@/lib/records/types";
+import { getCurrentYearMonth, getTodayDateString } from "@/lib/records/types";
 import {
   getSharedGamesByMonth,
   requireShareAccess,
@@ -26,9 +26,9 @@ export default async function ShareCalendarPage({ params, searchParams }: Props)
   await requireShareAccess(token);
 
   const query = await searchParams;
-  const now = new Date();
-  const year = query.year ? Number(query.year) : now.getFullYear();
-  const month = query.month ? Number(query.month) : now.getMonth() + 1;
+  const { year: currentYear, month: currentMonth } = getCurrentYearMonth();
+  const year = query.year ? Number(query.year) : currentYear;
+  const month = query.month ? Number(query.month) : currentMonth;
 
   const games = await getSharedGamesByMonth(token, year, month);
   const grouped = groupGamesByDate(games);
@@ -37,7 +37,7 @@ export default async function ShareCalendarPage({ params, searchParams }: Props)
     gamesByDate.set(date, list.length);
   }
 
-  const todayStr = toDateString(now);
+  const todayStr = getTodayDateString();
   const basePath = `/share/${token}`;
 
   return (
