@@ -41,13 +41,30 @@ function validatePassword(password: string): string | null {
   return null;
 }
 
-async function signInUser(userId: string, next: string): Promise<never> {
+function dbErrorMessage(): AuthState {
+  return {
+    error:
+      "データベースに接続できません。Vercel の DATABASE_URL（PostgreSQL）を確認してください。",
+  };
+}
+
+async function completeSignIn(userId: string, next: string): Promise<AuthState> {
   try {
     await setSessionCookie(userId);
   } catch {
-    throw new Error("AUTH_SECRET is not configured");
+    return {
+      error:
+        "サーバー設定が不完全です。Vercel の AUTH_SECRET（16文字以上）を設定してください。",
+    };
   }
-  await ensureDefaultRulesForUser(userId);
+
+  try {
+    await ensureDefaultRulesForUser(userId);
+  } catch (error) {
+    console.error("ensureDefaultRulesForUser failed", error);
+    return dbErrorMessage();
+  }
+
   redirect(safeNextPath(next));
 }
 
@@ -65,13 +82,19 @@ export async function loginAction(
   const passwordError = validatePassword(password);
   if (passwordError) return { error: passwordError };
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  let user;
+  try {
+    user = await prisma.user.findUnique({ where: { email } });
+  } catch (error) {
+    console.error("login findUnique failed", error);
+    return dbErrorMessage();
+  }
+
   if (!user || !(await verifyPassword(password, user.passwordHash))) {
     return { error: "メールアドレスまたはパスワードが正しくありません" };
   }
 
-  await signInUser(user.id, next);
-  return {};
+  return completeSignIn(user.id, next);
 }
 
 export async function registerAction(
@@ -93,20 +116,24 @@ export async function registerAction(
     return { error: "パスワード（確認）が一致しません" };
   }
 
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) {
-    return { error: "このメールアドレスは既に登録されています" };
+  try {
+    const existing = await prisma.user.findUnique({ where: { email } });
+    if (existing) {
+      return { error: "このメールアドレスは既に登録されています" };
+    }
+
+    const user = await prisma.user.create({
+      data: {
+        email,
+        passwordHash: await hashPassword(password),
+      },
+    });
+
+    return completeSignIn(user.id, next);
+  } catch (error) {
+    console.error("register failed", error);
+    return dbErrorMessage();
   }
-
-  const user = await prisma.user.create({
-    data: {
-      email,
-      passwordHash: await hashPassword(password),
-    },
-  });
-
-  await signInUser(user.id, next);
-  return {};
 }
 
 export async function logoutAction(): Promise<void> {

@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# M-records（麻雀成績管理）
 
-## Getting Started
+Next.js + Prisma で対局記録・成績を管理する Web アプリです。
 
-First, run the development server:
+## ローカル開発
 
 ```bash
+npm install
+cp .env.example .env
+# .env に PostgreSQL の DATABASE_URL と AUTH_SECRET を設定
+npx prisma db push
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Vercel へのデプロイ
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Vercel のサーバーレス環境では **SQLite は使えません**。PostgreSQL が必要です。
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 1. Neon でデータベースを作成（無料）
 
-## Learn More
+1. [Neon](https://neon.tech/) でプロジェクトを作成
+2. **Connection string**（`postgresql://...`）をコピー
 
-To learn more about Next.js, take a look at the following resources:
+### 2. Vercel の環境変数を設定
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Vercel ダッシュボード → プロジェクト → **Settings → Environment Variables**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| 名前 | 値 |
+|------|-----|
+| `DATABASE_URL` | Neon の PostgreSQL 接続文字列 |
+| `AUTH_SECRET` | 16文字以上のランダム文字列（例: `openssl rand -base64 32` の出力） |
 
-## Deploy on Vercel
+**Production / Preview / Development** すべてに設定してください。
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 3. 再デプロイ
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+環境変数を保存したあと **Redeploy** します。  
+ビルド時に `prisma db push` でテーブルが自動作成されます。
+
+### 4. 初回利用
+
+1. `https://m-records.vercel.app/register` でアカウント作成
+2. ログインしてプレイヤー・ルールを登録
+
+## 主な機能
+
+- アカウントごとのデータ管理（ログイン / 新規登録）
+- プレイヤー・ルール管理、対局記録
+- カレンダー表示、通算成績・pt 推移グラフ
+- 閲覧専用共有リンク（`/admin/share`）
+
+## 技術スタック
+
+- Next.js 15, React 19, Tailwind CSS 4
+- Prisma 6, PostgreSQL
