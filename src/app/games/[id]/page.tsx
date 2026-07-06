@@ -1,18 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import AppShell from "@/components/AppShell";
+import GameScoreTable from "@/components/GameScoreTable";
 import { deleteGameAction, getGameById } from "@/lib/records/actions";
 import { getGameDetailRows, getGameTotals } from "@/lib/records/stats";
 import {
-  formatScoreShort,
-  pointDiffToneClass,
   toDateString,
   formatJapaneseDate,
 } from "@/lib/records/types";
-import {
-  formatMoney,
-  formatRuleSettingsSummary,
-} from "@/lib/records/ruleScoring";
+import { formatRuleSettingsSummary } from "@/lib/records/ruleScoring";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -69,82 +65,13 @@ export default async function GameDetailPage({ params }: Props) {
           </p>
         </div>
 
-        <div className="space-y-4">
-          <div className="overflow-x-auto rounded-2xl border border-stone-200/80 bg-white shadow-sm">
-            <table className="w-full min-w-[360px] table-fixed text-sm">
-              <colgroup>
-                <col className="w-[4.75rem]" />
-                {sortedPlayers.map((gp) => (
-                  <col key={gp.id} />
-                ))}
-              </colgroup>
-              <thead>
-                <tr className="border-b border-stone-200 bg-stone-50 text-stone-600">
-                  <th className="px-3 py-3 text-left font-medium">半荘</th>
-                  {sortedPlayers.map((gp) => (
-                    <th
-                      key={gp.id}
-                      className="px-2 py-3 text-center font-medium"
-                    >
-                      <Link
-                        href={`/players/${gp.playerId}`}
-                        className="hover:text-emerald-800"
-                      >
-                        {gp.player.name}
-                      </Link>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row) => (
-                  <tr key={row.number} className="border-b border-stone-100">
-                    <td className="px-3 py-2.5 font-medium text-stone-700">
-                      {row.number}
-                    </td>
-                    {sortedPlayers.map((gp) => {
-                      const score = row.scores[gp.seat];
-                      return (
-                        <td key={gp.id} className="px-2 py-2.5 text-center">
-                          <span className="font-semibold">
-                            {formatScoreShort(score)}
-                          </span>
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="overflow-x-auto rounded-2xl border border-sky-300/80 bg-sky-200 shadow-sm">
-            <table className="w-full min-w-[360px] table-fixed text-sm">
-              <colgroup>
-                <col className="w-[4.75rem]" />
-                {sortedPlayers.map((gp) => (
-                  <col key={gp.id} />
-                ))}
-              </colgroup>
-              <tbody>
-                <tr className="font-semibold">
-                  <td className="px-3 py-3 text-stone-800">合計pt</td>
-                  {sortedPlayers.map((gp) => {
-                    const money = moneyTotals[gp.seat];
-                    return (
-                      <td
-                        key={gp.id}
-                        className={`px-2 py-3 text-center font-semibold ${pointDiffToneClass(money)}`}
-                      >
-                        {formatMoney(money)}
-                      </td>
-                    );
-                  })}
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <GameScoreTable
+          rows={rows}
+          moneyTotals={moneyTotals}
+          config={config}
+          players={sortedPlayers}
+          playerHref={(playerId) => `/players/${playerId}`}
+        />
 
         <Link
           href={`/games/${id}/edit`}

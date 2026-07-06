@@ -334,27 +334,31 @@ export default function GameForm({ date, players, rules, edit }: Props) {
         <input type="hidden" name="roundCount" value={roundCount} />
 
         <ScaleToFit>
-          <div className="space-y-4">
-            <table className="w-full min-w-[28rem] table-fixed text-sm">
+          <div className="overflow-hidden rounded-xl border border-stone-200/80">
+            <table className="w-full min-w-[26rem] table-fixed text-sm">
               <colgroup>
-                <col className="w-[4.75rem]" />
+                <col className="w-[2.75rem]" />
                 {Array.from({ length: config.playerCount }, (_, seat) => (
-                  <col key={seat} className="w-[7.5rem]" />
+                  <col key={seat} />
                 ))}
-                <col className="w-[3.5rem]" />
+                <col className="w-[2.5rem]" />
               </colgroup>
               <thead>
-                <tr className="border-b border-stone-200 text-stone-500">
-                  <th className="px-3 py-2 text-left font-medium">半荘</th>
+                <tr className="border-b border-stone-300 bg-white text-stone-500">
+                  <th className="px-1 py-2 text-center text-xs font-medium">
+                    半荘
+                  </th>
                   {Array.from({ length: config.playerCount }, (_, seat) => (
                     <th
                       key={seat}
-                      className="px-2 py-2 text-center font-medium"
+                      className="border-l-2 border-stone-800 px-2 py-2 text-center text-sm font-semibold text-stone-800"
                     >
                       {columnLabel(seat)}
                     </th>
                   ))}
-                  <th className="px-2 py-2 text-right font-medium">合計</th>
+                  <th className="border-l-2 border-stone-800 px-1 py-2 text-center text-xs font-medium">
+                    合計
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -384,21 +388,24 @@ export default function GameForm({ date, players, rules, edit }: Props) {
                   return (
                     <tr
                       key={roundIndex}
-                      className="border-b border-stone-100"
+                      className={`bg-white ${liveTotals && roundIndex === scores.length - 1 ? "" : "border-b border-stone-300"}`}
                     >
-                      <td className="px-3 py-2 font-medium text-stone-700">
+                      <td className="px-1 py-2 text-center text-xs font-medium text-stone-700">
                         {roundIndex + 1}
                       </td>
                       {row.map((score, seat) => {
                         const hanchanPt = rowPts?.[seat] ?? null;
                         return (
-                          <td key={seat} className="px-2 py-2">
+                          <td
+                            key={seat}
+                            className="border-l-2 border-stone-800 px-2 py-2 text-center"
+                          >
                             <input
                               type="hidden"
                               name={`round_${roundIndex}_score_${seat}`}
                               value={score}
                             />
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center justify-center gap-1">
                               <input
                                 type="number"
                                 min={0}
@@ -408,10 +415,10 @@ export default function GameForm({ date, players, rules, edit }: Props) {
                                 onChange={(e) =>
                                   updateScore(roundIndex, seat, e.target.value)
                                 }
-                                className="w-[4.25rem] shrink-0 rounded-lg border border-stone-300 px-1.5 py-1.5 text-center tabular-nums outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-200"
+                                className="w-[3.1rem] shrink-0 rounded-lg border border-stone-300 px-1 py-1.5 text-center tabular-nums outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-200"
                               />
                               <span
-                                className={`w-[2.75rem] shrink-0 text-left text-[10px] font-semibold leading-tight ${
+                                className={`w-[2.75rem] shrink-0 text-center text-[10px] font-semibold leading-tight ${
                                   hanchanPt === null
                                     ? "text-transparent"
                                     : pointDiffToneClass(hanchanPt)
@@ -425,7 +432,7 @@ export default function GameForm({ date, players, rules, edit }: Props) {
                         );
                       })}
                       <td
-                        className={`px-2 py-2 text-right text-xs font-medium ${!rowComplete ? "text-stone-400" : sumOk ? "text-stone-500" : "text-red-600"}`}
+                        className={`border-l-2 border-stone-800 px-0.5 py-2 text-center text-[11px] font-medium tabular-nums ${!rowComplete ? "text-stone-400" : sumOk ? "text-stone-500" : "text-red-600"}`}
                       >
                         {rowComplete ? formatScoreShort(sum) : "—"}
                       </td>
@@ -433,38 +440,28 @@ export default function GameForm({ date, players, rules, edit }: Props) {
                   );
                 })}
               </tbody>
-            </table>
-
-            {liveTotals && (
-              <div className="rounded-xl border border-sky-300/80 bg-sky-200">
-                <table className="w-full min-w-[28rem] table-fixed text-base">
-                <colgroup>
-                  <col className="w-[4.75rem]" />
-                  {Array.from({ length: config.playerCount }, (_, seat) => (
-                    <col key={seat} className="w-[7.5rem]" />
-                  ))}
-                  <col className="w-[3.5rem]" />
-                </colgroup>
-                <tbody>
-                  <tr className="font-semibold">
-                    <td className="px-3 py-3 text-base text-stone-800">合計pt</td>
+              {liveTotals && (
+                <tfoot>
+                  <tr className="border-t-2 border-stone-800 bg-sky-200 font-semibold">
+                    <td className="px-1 py-2.5 text-xs font-semibold text-stone-800">
+                      合計pt
+                    </td>
                     {Array.from({ length: config.playerCount }, (_, seat) => {
                       const money = liveTotals.moneyTotals[seat];
                       return (
                         <td
                           key={seat}
-                          className={`px-2 py-3 text-center text-base font-bold ${pointDiffToneClass(money)}`}
+                          className={`border-l-2 border-stone-800 px-2 py-3 text-center text-base font-bold ${pointDiffToneClass(money)}`}
                         >
                           {formatMoney(money)}
                         </td>
                       );
                     })}
-                    <td className="px-2 py-3" />
+                    <td className="border-l-2 border-stone-800 px-0.5 py-2.5" />
                   </tr>
-                </tbody>
-                </table>
-              </div>
-            )}
+                </tfoot>
+              )}
+            </table>
           </div>
         </ScaleToFit>
       </section>
