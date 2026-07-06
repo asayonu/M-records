@@ -8,3 +8,19 @@ body {
   min-height: 100dvh;
   font-family: var(--font-noto-sans-jp), ui-sans-serif, system-ui, sans-serif;
 }
+
+@keyframes loading-orbit-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-orbit {
+  animation: loading-orbit-spin 1.35s linear infinite;
+}
+
+.loading-orbit-dot {
+  transform: rotate(var(--orbit-angle)) translateY(-2.25rem);
+  margin-left: -0.3125rem;
+  margin-top: -0.3125rem;
+}

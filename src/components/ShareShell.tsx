@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import NavMenu from "@/components/NavMenu";
 
 type Props = {
   token: string;
@@ -29,9 +30,12 @@ export default function ShareShell({ token, title, children }: Props) {
               {title}
             </span>
           </nav>
-          <span className="shrink-0 rounded-md bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-800">
-            閲覧専用
-          </span>
+          <div className="flex shrink-0 items-center gap-2">
+            <span className="rounded-md bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-800">
+              閲覧専用
+            </span>
+            <NavMenu variant="share" token={token} />
+          </div>
         </div>
       </header>
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">

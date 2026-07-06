@@ -10,6 +10,7 @@ import {
   getGamesByDateForUser,
   getGamesByMonthForUser,
   getGamesForPlayerForUser,
+  getAllGamesForUser,
 } from "@/lib/records/queries";
 import {
   parseDateAtNoon,
@@ -268,4 +269,9 @@ export async function getGameById(gameId: string) {
 export async function getGamesForPlayer(playerId: string) {
   const userId = await requireUserId();
   return getGamesForPlayerForUser(userId, playerId);
+}
+
+export async function getAllGames() {
+  const userId = await requireUserId();
+  return getAllGamesForUser(userId);
 }

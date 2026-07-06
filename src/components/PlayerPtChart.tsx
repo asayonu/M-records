@@ -124,6 +124,19 @@ export default function PlayerPtChart({ points }: Props) {
             strokeDasharray="4 3"
           />
 
+          {dateLabelIndices.map((i) => (
+            <line
+              key={`date-line-${points[i].playedAt}-${i}`}
+              x1={xAt(i)}
+              y1={padding.top}
+              x2={xAt(i)}
+              y2={height - padding.bottom}
+              stroke="#78716c"
+              strokeWidth={1.25}
+              strokeDasharray="4 3"
+            />
+          ))}
+
           <path d={areaPath} fill={fillColor} opacity={0.65} />
           <path
             d={linePath}

@@ -6,6 +6,8 @@ import { notFound } from "next/navigation";
 import { requireUserId } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
 import {
+  getAllGamesForUser,
+  getAllPlayersForUser,
   getGameByIdForUser,
   getGamesByDateForUser,
   getGamesByMonthForUser,
@@ -127,4 +129,14 @@ export async function getSharedGamesForPlayer(
 ) {
   const { userId } = await requireShareAccess(shareToken);
   return getGamesForPlayerForUser(userId, playerId);
+}
+
+export async function getSharedAllGames(shareToken: string) {
+  const { userId } = await requireShareAccess(shareToken);
+  return getAllGamesForUser(userId);
+}
+
+export async function getSharedAllPlayers(shareToken: string) {
+  const { userId } = await requireShareAccess(shareToken);
+  return getAllPlayersForUser(userId);
 }

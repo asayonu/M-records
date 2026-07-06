@@ -20,6 +20,7 @@ import {
   scoreShortInputValue,
   pointDiffToneClass,
 } from "@/lib/records/types";
+import ScaleToFit from "@/components/ScaleToFit";
 import { DEFAULT_GAME_MODE } from "@/lib/records/mode";
 
 type PlayerOption = {
@@ -332,8 +333,8 @@ export default function GameForm({ date, players, rules, edit }: Props) {
 
         <input type="hidden" name="roundCount" value={roundCount} />
 
-        <div className="space-y-4">
-          <div className="overflow-x-auto">
+        <ScaleToFit>
+          <div className="space-y-4">
             <table className="w-full min-w-[28rem] table-fixed text-sm">
               <colgroup>
                 <col className="w-[4.75rem]" />
@@ -433,11 +434,10 @@ export default function GameForm({ date, players, rules, edit }: Props) {
                 })}
               </tbody>
             </table>
-          </div>
 
-          {liveTotals && (
-            <div className="overflow-x-auto rounded-xl border border-sky-300/80 bg-sky-200">
-              <table className="w-full min-w-[28rem] table-fixed text-sm">
+            {liveTotals && (
+              <div className="rounded-xl border border-sky-300/80 bg-sky-200">
+                <table className="w-full min-w-[28rem] table-fixed text-base">
                 <colgroup>
                   <col className="w-[4.75rem]" />
                   {Array.from({ length: config.playerCount }, (_, seat) => (
@@ -447,13 +447,13 @@ export default function GameForm({ date, players, rules, edit }: Props) {
                 </colgroup>
                 <tbody>
                   <tr className="font-semibold">
-                    <td className="px-3 py-3 text-stone-800">合計pt</td>
+                    <td className="px-3 py-3 text-base text-stone-800">合計pt</td>
                     {Array.from({ length: config.playerCount }, (_, seat) => {
                       const money = liveTotals.moneyTotals[seat];
                       return (
                         <td
                           key={seat}
-                          className={`px-2 py-3 text-center text-xs font-semibold ${pointDiffToneClass(money)}`}
+                          className={`px-2 py-3 text-center text-base font-bold ${pointDiffToneClass(money)}`}
                         >
                           {formatMoney(money)}
                         </td>
@@ -462,10 +462,11 @@ export default function GameForm({ date, players, rules, edit }: Props) {
                     <td className="px-2 py-3" />
                   </tr>
                 </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+                </table>
+              </div>
+            )}
+          </div>
+        </ScaleToFit>
       </section>
 
       {state.error && (

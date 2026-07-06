@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Calendar from "@/components/Calendar";
 import ShareShell from "@/components/ShareShell";
-import { groupGamesByDate } from "@/lib/records/calendar";
+import { hanchanCountByDate } from "@/lib/records/calendar";
 import { getCurrentYearMonth, getTodayDateString } from "@/lib/records/types";
 import {
   getSharedGamesByMonth,
@@ -31,11 +31,7 @@ export default async function ShareCalendarPage({ params, searchParams }: Props)
   const month = query.month ? Number(query.month) : currentMonth;
 
   const games = await getSharedGamesByMonth(token, year, month);
-  const grouped = groupGamesByDate(games);
-  const gamesByDate = new Map<string, number>();
-  for (const [date, list] of grouped) {
-    gamesByDate.set(date, list.length);
-  }
+  const gamesByDate = hanchanCountByDate(games);
 
   const todayStr = getTodayDateString();
   const basePath = `/share/${token}`;

@@ -71,6 +71,14 @@ export async function getPlayerByIdForUser(userId: string, playerId: string) {
   });
 }
 
+export async function getAllGamesForUser(userId: string) {
+  return prisma.game.findMany({
+    where: { userId },
+    orderBy: [{ playedAt: "desc" }, { createdAt: "desc" }],
+    include: gameInclude,
+  });
+}
+
 export async function getAllPlayersForUser(userId: string) {
   return prisma.player.findMany({
     where: { userId },

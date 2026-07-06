@@ -4,11 +4,47 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { logoutAction } from "@/lib/auth/actions";
 
-type Props = {
+type AppProps = {
+  variant?: "app";
   user: { email: string } | null;
 };
 
-export default function NavMenu({ user }: Props) {
+type ShareProps = {
+  variant: "share";
+  token: string;
+};
+
+type Props = AppProps | ShareProps;
+
+function MenuButton({ open, onClick }: { open: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-expanded={open}
+      aria-haspopup="true"
+      aria-label="メニュー"
+      onClick={onClick}
+      className="flex size-9 items-center justify-center rounded-lg border border-stone-200 text-stone-600 transition hover:bg-stone-50"
+    >
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 18 18"
+        fill="none"
+        aria-hidden
+      >
+        <path
+          d="M2 4.5h14M2 9h14M2 13.5h14"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+      </svg>
+    </button>
+  );
+}
+
+export default function NavMenu(props: Props) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -32,32 +68,40 @@ export default function NavMenu({ user }: Props) {
   const linkClass =
     "block rounded-lg px-3 py-2.5 text-sm font-medium text-stone-700 hover:bg-stone-100";
 
+  if (props.variant === "share") {
+    const basePath = `/share/${props.token}`;
+    return (
+      <div ref={rootRef} className="relative">
+        <MenuButton open={open} onClick={() => setOpen((prev) => !prev)} />
+        {open && (
+          <div className="absolute right-0 z-50 mt-2 min-w-[11rem] rounded-xl border border-stone-200/80 bg-white py-1.5 shadow-lg">
+            <nav className="px-1.5" aria-label="閲覧メニュー">
+              <Link
+                href={`${basePath}/players`}
+                className={linkClass}
+                onClick={() => setOpen(false)}
+              >
+                プレイヤー
+              </Link>
+              <Link
+                href={`${basePath}/games`}
+                className={linkClass}
+                onClick={() => setOpen(false)}
+              >
+                過去の対局
+              </Link>
+            </nav>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const { user } = props;
+
   return (
     <div ref={rootRef} className="relative">
-      <button
-        type="button"
-        aria-expanded={open}
-        aria-haspopup="true"
-        aria-label="メニュー"
-        onClick={() => setOpen((prev) => !prev)}
-        className="flex size-9 items-center justify-center rounded-lg border border-stone-200 text-stone-600 transition hover:bg-stone-50"
-      >
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 18 18"
-          fill="none"
-          aria-hidden
-        >
-          <path
-            d="M2 4.5h14M2 9h14M2 13.5h14"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-        </svg>
-      </button>
-
+      <MenuButton open={open} onClick={() => setOpen((prev) => !prev)} />
       {open && (
         <div className="absolute right-0 z-50 mt-2 min-w-[11rem] rounded-xl border border-stone-200/80 bg-white py-1.5 shadow-lg">
           {user ? (
@@ -73,6 +117,13 @@ export default function NavMenu({ user }: Props) {
                   onClick={() => setOpen(false)}
                 >
                   プレイヤー
+                </Link>
+                <Link
+                  href="/games"
+                  className={linkClass}
+                  onClick={() => setOpen(false)}
+                >
+                  過去の対局
                 </Link>
                 <Link
                   href="/admin/rules"

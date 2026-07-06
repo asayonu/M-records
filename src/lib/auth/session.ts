@@ -34,7 +34,16 @@ export async function requireUserId(): Promise<string> {
   if (!session) {
     redirect("/login");
   }
-  return session.userId;
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { id: true },
+  });
+  if (!user) {
+    redirect("/api/auth/invalidate");
+  }
+
+  return user.id;
 }
 
 /** @deprecated use requireUserId */

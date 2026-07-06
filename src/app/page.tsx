@@ -2,7 +2,7 @@ import Link from "next/link";
 import Calendar from "@/components/Calendar";
 import AuthNav from "@/components/AuthNav";
 import { getGamesByMonth } from "@/lib/records/actions";
-import { groupGamesByDate } from "@/lib/records/calendar";
+import { hanchanCountByDate } from "@/lib/records/calendar";
 import { getCurrentYearMonth, getTodayDateString } from "@/lib/records/types";
 
 type Props = {
@@ -16,11 +16,7 @@ export default async function Home({ searchParams }: Props) {
   const month = params.month ? Number(params.month) : currentMonth;
 
   const games = await getGamesByMonth(year, month);
-  const grouped = groupGamesByDate(games);
-  const gamesByDate = new Map<string, number>();
-  for (const [date, list] of grouped) {
-    gamesByDate.set(date, list.length);
-  }
+  const gamesByDate = hanchanCountByDate(games);
 
   const todayStr = getTodayDateString();
 

@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Noto_Sans_JP } from "next/font/google";
+import { Suspense } from "react";
+import NavigationLoading from "@/components/NavigationLoading";
 import "./globals.css";
 
 const notoSansJP = Noto_Sans_JP({
@@ -30,6 +32,9 @@ export default function RootLayout({
       <body
         className={`${notoSansJP.variable} antialiased bg-stone-100 text-stone-900`}
       >
+        <Suspense fallback={null}>
+          <NavigationLoading />
+        </Suspense>
         {children}
       </body>
     </html>

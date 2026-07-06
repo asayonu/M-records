@@ -120,7 +120,7 @@ export default function Calendar({ year, month, gamesByDate, basePath }: Props) 
               }
 
               const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-              const gameCount = gamesByDate.get(dateStr) ?? 0;
+              const hanchanCount = gamesByDate.get(dateStr) ?? 0;
               const isToday = dateStr === todayStr;
 
               return (
@@ -130,15 +130,15 @@ export default function Calendar({ year, month, gamesByDate, basePath }: Props) 
                   className={`relative flex aspect-square flex-col items-center justify-center border-b border-stone-200/40 text-sm transition last:border-b-0 hover:bg-black/5 ${weekdayTextClass(col)} ${
                     isToday
                       ? "ring-2 ring-inset ring-emerald-500"
-                      : gameCount > 0
+                      : hanchanCount > 0
                         ? "font-semibold"
                         : ""
                   }`}
                 >
                   <span>{day}</span>
-                  {gameCount > 0 && (
+                  {hanchanCount > 0 && (
                     <span className="mt-0.5 text-[10px] font-medium text-emerald-700">
-                      {gameCount}局
+                      {hanchanCount}半荘
                     </span>
                   )}
                 </Link>

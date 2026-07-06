@@ -14,6 +14,10 @@ export async function middleware(request: NextRequest) {
   const session = await verifySessionToken(token);
   const authed = session !== null;
 
+  if (pathname === "/api/auth/invalidate") {
+    return NextResponse.next();
+  }
+
   if (isShareRoute(pathname)) {
     return NextResponse.next();
   }

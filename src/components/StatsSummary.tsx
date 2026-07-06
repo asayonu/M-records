@@ -45,7 +45,7 @@ export default function StatsSummary({
     <section className="space-y-3">
       <h2 className="text-sm font-semibold text-stone-700">通算成績</h2>
       <div className="grid grid-cols-2 gap-3">
-        <StatCard label="参加対局" value={`${gameCount} 局`} />
+        <StatCard label="参加対局" value={`${gameCount} 試合`} />
         <StatCard label="半荘数" value={`${hanchanCount} 半荘`} />
         <StatCard
           label="合計収支"
