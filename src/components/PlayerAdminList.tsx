@@ -1,14 +1,14 @@
 import Link from "next/link";
+import PlayerTotalPtDisplay from "@/components/PlayerTotalPtDisplay";
 import RegularMemberCheckbox from "@/components/RegularMemberCheckbox";
 import { deletePlayerAction } from "@/lib/players/actions";
-
 type PlayerItem = {
   id: string;
   name: string;
   isRegularMember: boolean;
+  totalPt: number;
   _count: { gamePlayers: number };
 };
-
 type Props = {
   players: PlayerItem[];
 };
@@ -43,6 +43,7 @@ export default function PlayerAdminList({ players }: Props) {
               </span>
             </p>
           </Link>
+          <PlayerTotalPtDisplay totalPt={player.totalPt} />
           <RegularMemberCheckbox
             playerId={player.id}
             checked={player.isRegularMember}

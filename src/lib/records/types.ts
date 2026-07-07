@@ -153,6 +153,8 @@ export function calcPlayerStats(
       averageDiff: 0,
       averageRank: 0,
       firstRate: 0,
+      secondRate: 0,
+      thirdRate: 0,
       topTwoRate: 0,
       lastRate: 0,
     };
@@ -161,6 +163,8 @@ export function calcPlayerStats(
   let totalDiff = 0;
   let rankSum = 0;
   let firstCount = 0;
+  let secondCount = 0;
+  let thirdCount = 0;
   let topTwoCount = 0;
   let lastCount = 0;
 
@@ -173,6 +177,8 @@ export function calcPlayerStats(
     const rank = ranks[round.playerIndex];
     rankSum += rank;
     if (rank === 1) firstCount++;
+    if (rank === 2) secondCount++;
+    if (rank === 3) thirdCount++;
     if (rank <= 2) topTwoCount++;
     if (rank === round.playerCount) lastCount++;
   }
@@ -184,6 +190,8 @@ export function calcPlayerStats(
     averageDiff: totalDiff / count,
     averageRank: rankSum / count,
     firstRate: (firstCount / count) * 100,
+    secondRate: (secondCount / count) * 100,
+    thirdRate: (thirdCount / count) * 100,
     topTwoRate: (topTwoCount / count) * 100,
     lastRate: (lastCount / count) * 100,
   };

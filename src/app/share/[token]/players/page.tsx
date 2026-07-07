@@ -1,7 +1,8 @@
 import Link from "next/link";
 import PlayerShareList from "@/components/PlayerShareList";
 import ShareShell from "@/components/ShareShell";
-import { getSharedAllPlayers, requireShareAccess } from "@/lib/share/actions";
+import { getPlayerTotalPt } from "@/lib/records/stats";
+import { getSharedAllGames, getSharedAllPlayers, requireShareAccess } from "@/lib/share/actions";
 
 type Props = {
   params: Promise<{ token: string }>;
@@ -19,8 +20,15 @@ export default async function SharePlayersPage({ params }: Props) {
   const { token } = await params;
   await requireShareAccess(token);
 
-  const players = await getSharedAllPlayers(token);
+  const [players, games] = await Promise.all([
+    getSharedAllPlayers(token),
+    getSharedAllGames(token),
+  ]);
   const basePath = `/share/${token}`;
+  const playersWithPt = players.map((player) => ({
+    ...player,
+    totalPt: getPlayerTotalPt(games, player.id),
+  }));
 
   return (
     <ShareShell token={token} title="プレイヤー">
@@ -37,7 +45,7 @@ export default async function SharePlayersPage({ params }: Props) {
             登録済み {players.length} 人 · 名前をタップすると通算成績を表示
           </p>
         </div>
-        <PlayerShareList players={players} shareBase={basePath} />
+        <PlayerShareList players={playersWithPt} shareBase={basePath} />
       </div>
     </ShareShell>
   );

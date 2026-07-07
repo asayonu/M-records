@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Calendar from "@/components/Calendar";
+import ShareNavLinks from "@/components/ShareNavLinks";
 import ShareShell from "@/components/ShareShell";
 import { hanchanCountByDate } from "@/lib/records/calendar";
 import { getCurrentYearMonth, getTodayDateString } from "@/lib/records/types";
@@ -56,13 +57,14 @@ export default async function ShareCalendarPage({ params, searchParams }: Props)
           basePath={basePath}
         />
 
-        <div className="flex justify-center">
+        <div className="flex flex-col items-center gap-4">
           <Link
             href={`${basePath}/dates/${todayStr}`}
             className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
           >
             今日の対局を見る
           </Link>
+          <ShareNavLinks token={token} />
         </div>
       </div>
     </ShareShell>

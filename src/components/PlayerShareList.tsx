@@ -1,8 +1,9 @@
 import Link from "next/link";
-
+import PlayerTotalPtDisplay from "@/components/PlayerTotalPtDisplay";
 type PlayerItem = {
   id: string;
   name: string;
+  totalPt: number;
   _count: { gamePlayers: number };
 };
 
@@ -30,15 +31,18 @@ export default function PlayerShareList({ players, shareBase }: Props) {
         <li key={player.id}>
           <Link
             href={playerHref(player.id)}
-            className="block rounded-xl border border-stone-200/80 bg-white px-4 py-3 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50/30"
+            className="flex items-center justify-between gap-3 rounded-xl border border-stone-200/80 bg-white px-4 py-3 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50/30"
           >
-            <span className="font-semibold text-stone-900">{player.name}</span>
-            <p className="mt-0.5 text-xs text-stone-500">
-              参加 {player._count.gamePlayers} 試合
-              <span className="ml-2 font-medium text-emerald-700">
-                成績を見る →
-              </span>
-            </p>
+            <div className="min-w-0 flex-1">
+              <span className="font-semibold text-stone-900">{player.name}</span>
+              <p className="mt-0.5 text-xs text-stone-500">
+                参加 {player._count.gamePlayers} 試合
+                <span className="ml-2 font-medium text-emerald-700">
+                  成績を見る →
+                </span>
+              </p>
+            </div>
+            <PlayerTotalPtDisplay totalPt={player.totalPt} />
           </Link>
         </li>
       ))}

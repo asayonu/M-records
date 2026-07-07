@@ -71,17 +71,7 @@ export default function PlayerPtChart({ points }: Props) {
 
   return (
     <section className="space-y-3">
-      <div className="flex flex-wrap items-end justify-between gap-2">
-        <h2 className="text-sm font-semibold text-stone-700">pt推移</h2>
-        <p className="text-sm text-stone-600">
-          通算{" "}
-          <span
-            className={`font-bold ${finalPt >= 0 ? "text-emerald-600" : "text-red-600"}`}
-          >
-            {formatMoney(finalPt)}
-          </span>
-        </p>
-      </div>
+      <h2 className="text-sm font-semibold text-stone-700">pt推移</h2>
 
       <div className="overflow-x-auto rounded-2xl border border-stone-200/80 bg-white p-3 shadow-sm">
         <svg

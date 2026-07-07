@@ -92,11 +92,16 @@ export function summarizeGame(game: GameWithDetails) {
   const config = resolveGameConfig(game);
   const rounds = extractRoundScores(game, config.playerCount);
   const sorted = [...game.players].sort((a, b) => a.seat - b.seat);
+  const { moneyTotals } = computeScoresTotals(
+    rounds.map((r) => r.scores),
+    config,
+  );
   return {
     modeLabel: config.modeLabel,
     ruleName: config.ruleName,
     hanchanCount: rounds.length,
     playerNames: sorted.map((p) => p.player.name),
+    playerPtTotals: moneyTotals,
   };
 }
 
@@ -210,4 +215,12 @@ export function getPlayerPtHistory(
   }
 
   return points;
+}
+
+export function getPlayerTotalPt(
+  games: GameWithDetails[],
+  playerId: string,
+): number {
+  const points = getPlayerPtHistory(games, playerId);
+  return points.length > 0 ? points[points.length - 1].cumulativePt : 0;
 }

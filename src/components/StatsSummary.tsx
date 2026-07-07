@@ -1,74 +1,75 @@
-import { formatPointDiff, formatScore } from "@/lib/records/types";
+import { formatMoney } from "@/lib/records/ruleScoring";
+import { pointDiffToneClass } from "@/lib/records/types";
 
 type Props = {
-  gameCount: number;
-  averageStartingScore: number;
+  dayCount: number;
+  totalPt: number;
   hanchanCount: number;
-  totalDiff: number;
-  averageDiff: number;
   averageRank: number;
   firstRate: number;
-  topTwoRate: number;
-  lastRate: number;
+  secondRate: number;
+  thirdRate: number;
 };
 
 function StatCard({
   label,
   value,
   sub,
+  valueClassName = "text-stone-900",
 }: {
   label: string;
   value: string;
   sub?: string;
+  valueClassName?: string;
 }) {
   return (
     <div className="rounded-xl border border-stone-200/80 bg-white p-4 shadow-sm shadow-stone-200/40">
       <p className="text-xs font-medium text-stone-500">{label}</p>
-      <p className="mt-1 text-xl font-bold text-stone-900">{value}</p>
+      <p className={`mt-1 text-xl font-bold tabular-nums ${valueClassName}`}>
+        {value}
+      </p>
       {sub && <p className="mt-0.5 text-xs text-stone-500">{sub}</p>}
     </div>
   );
 }
 
 export default function StatsSummary({
-  gameCount,
-  averageStartingScore,
+  dayCount,
+  totalPt,
   hanchanCount,
-  totalDiff,
-  averageDiff,
   averageRank,
   firstRate,
-  topTwoRate,
-  lastRate,
+  secondRate,
+  thirdRate,
 }: Props) {
+  const averagePtPerHanchan =
+    hanchanCount > 0 ? totalPt / hanchanCount : 0;
+
   return (
     <section className="space-y-3">
       <h2 className="text-sm font-semibold text-stone-700">通算成績</h2>
+
+      <div className="flex items-center justify-center gap-3 rounded-xl border border-stone-200/80 bg-white px-5 py-4 shadow-sm shadow-stone-200/40">
+        <p className="text-sm font-medium text-stone-500">通算pt</p>
+        <p
+          className={`text-2xl font-bold tabular-nums ${pointDiffToneClass(totalPt)}`}
+        >
+          {formatMoney(totalPt)}
+        </p>
+      </div>
+
       <div className="grid grid-cols-2 gap-3">
-        <StatCard label="参加対局" value={`${gameCount} 試合`} />
+        <StatCard label="参加日数" value={`${dayCount} 日`} />
         <StatCard label="半荘数" value={`${hanchanCount} 半荘`} />
-        <StatCard
-          label="合計収支"
-          value={formatPointDiff(totalDiff)}
-          sub={`1半荘平均 ${formatPointDiff(Math.round(averageDiff))}`}
-        />
         <StatCard
           label="平均順位"
           value={averageRank.toFixed(2)}
-          sub={`トップ ${firstRate.toFixed(0)}% / ラス ${lastRate.toFixed(0)}%`}
-        />
-        <StatCard
-          label="連対率"
-          value={`${topTwoRate.toFixed(0)}%`}
-          sub={`参考持ち点 ${averageStartingScore.toLocaleString()}点`}
+          sub={`1位:${firstRate.toFixed(0)}% / 2位:${secondRate.toFixed(0)}% / 3位:${thirdRate.toFixed(0)}%`}
         />
         <StatCard
           label="平均収支/半荘"
-          value={formatPointDiff(Math.round(averageDiff))}
-          sub={formatScore(
-            averageStartingScore + Math.round(averageDiff),
-            averageStartingScore,
-          )}
+          value={formatMoney(averagePtPerHanchan)}
+          valueClassName={pointDiffToneClass(averagePtPerHanchan)}
         />
       </div>
     </section>

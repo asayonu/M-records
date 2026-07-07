@@ -1,8 +1,10 @@
 import Link from "next/link";
 import AppShell from "@/components/AppShell";
-import PlayerRegisterForm from "@/components/PlayerRegisterForm";
 import PlayerAdminList from "@/components/PlayerAdminList";
+import PlayerRegisterForm from "@/components/PlayerRegisterForm";
 import { getAllPlayers } from "@/lib/players/actions";
+import { getAllGames } from "@/lib/records/actions";
+import { getPlayerTotalPt } from "@/lib/records/stats";
 
 type Props = {
   searchParams: Promise<{ error?: string }>;
@@ -14,7 +16,11 @@ export const metadata = {
 
 export default async function AdminPlayersPage({ searchParams }: Props) {
   const params = await searchParams;
-  const players = await getAllPlayers();
+  const [players, games] = await Promise.all([getAllPlayers(), getAllGames()]);
+  const playersWithPt = players.map((player) => ({
+    ...player,
+    totalPt: getPlayerTotalPt(games, player.id),
+  }));
 
   return (
     <AppShell title="プレイヤー管理">
@@ -55,7 +61,7 @@ export default async function AdminPlayersPage({ searchParams }: Props) {
           <h2 className="text-sm font-semibold text-stone-700">
             登録済みプレイヤー（{players.length}人）
           </h2>
-          <PlayerAdminList players={players} />
+          <PlayerAdminList players={playersWithPt} />
         </section>
 
         <section className="space-y-4 rounded-2xl border border-stone-200/80 bg-white p-5 shadow-sm">

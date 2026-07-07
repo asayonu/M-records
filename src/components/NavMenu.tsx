@@ -5,16 +5,10 @@ import { useEffect, useRef, useState } from "react";
 import { logoutAction } from "@/lib/auth/actions";
 
 type AppProps = {
-  variant?: "app";
   user: { email: string } | null;
 };
 
-type ShareProps = {
-  variant: "share";
-  token: string;
-};
-
-type Props = AppProps | ShareProps;
+type Props = AppProps;
 
 function MenuButton({ open, onClick }: { open: boolean; onClick: () => void }) {
   return (
@@ -68,35 +62,6 @@ export default function NavMenu(props: Props) {
   const linkClass =
     "block rounded-lg px-3 py-2.5 text-sm font-medium text-stone-700 hover:bg-stone-100";
 
-  if (props.variant === "share") {
-    const basePath = `/share/${props.token}`;
-    return (
-      <div ref={rootRef} className="relative">
-        <MenuButton open={open} onClick={() => setOpen((prev) => !prev)} />
-        {open && (
-          <div className="absolute right-0 z-50 mt-2 min-w-[11rem] rounded-xl border border-stone-200/80 bg-white py-1.5 shadow-lg">
-            <nav className="px-1.5" aria-label="閲覧メニュー">
-              <Link
-                href={`${basePath}/players`}
-                className={linkClass}
-                onClick={() => setOpen(false)}
-              >
-                プレイヤー
-              </Link>
-              <Link
-                href={`${basePath}/games`}
-                className={linkClass}
-                onClick={() => setOpen(false)}
-              >
-                過去の対局
-              </Link>
-            </nav>
-          </div>
-        )}
-      </div>
-    );
-  }
-
   const { user } = props;
 
   return (
@@ -116,7 +81,7 @@ export default function NavMenu(props: Props) {
                   className={linkClass}
                   onClick={() => setOpen(false)}
                 >
-                  プレイヤー
+                  プレイヤー情報
                 </Link>
                 <Link
                   href="/games"
