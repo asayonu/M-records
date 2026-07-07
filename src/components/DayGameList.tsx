@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { formatMoney } from "@/lib/records/ruleScoring";
+import { pointDiffToneClass } from "@/lib/records/types";
 
 type GameItem = {
   id: string;
@@ -6,6 +8,7 @@ type GameItem = {
   ruleName: string;
   hanchanCount: number;
   playerNames: string[];
+  playerPtTotals: number[];
 };
 
 type Props = {
@@ -42,22 +45,41 @@ export default function DayGameList({ date, games, shareBase }: Props) {
         <li key={game.id}>
           <Link
             href={gameHref(game.id)}
-            className="block rounded-2xl border border-stone-200/80 bg-white p-4 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50/30"
+            className="flex items-center justify-between gap-4 rounded-2xl border border-stone-200/80 bg-white p-4 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50/30"
           >
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-md bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">
-                {game.modeLabel}
-              </span>
-              <span className="text-xs font-medium text-stone-600">
-                {game.ruleName}
-              </span>
-              <span className="text-xs text-stone-400">
-                {game.hanchanCount}半荘
-              </span>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-md bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">
+                  {game.modeLabel}
+                </span>
+                <span className="text-xs font-medium text-stone-600">
+                  {game.ruleName}
+                </span>
+                <span className="text-xs text-stone-400">
+                  {game.hanchanCount}半荘
+                </span>
+              </div>
             </div>
-            <p className="mt-1.5 text-sm font-medium text-stone-900">
-              {game.playerNames.join(" · ")}
-            </p>
+            <div className="flex shrink-0 items-center justify-center gap-x-4">
+              {game.playerNames.map((name, index) => {
+                const pt = game.playerPtTotals[index];
+                return (
+                  <div
+                    key={`${game.id}-player-${index}`}
+                    className="min-w-[3.25rem] text-center"
+                  >
+                    <p className="truncate text-xs font-medium text-stone-800">
+                      {name}
+                    </p>
+                    <p
+                      className={`mt-0.5 text-xs font-semibold tabular-nums ${pointDiffToneClass(pt)}`}
+                    >
+                      {formatMoney(pt)}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
           </Link>
         </li>
       ))}
