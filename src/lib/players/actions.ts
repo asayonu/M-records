@@ -3,6 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireUserId } from "@/lib/auth/session";
+import {
+  DEFAULT_CHART_COLORS,
+  isValidChartColor,
+} from "@/lib/players/chartColors";
 import { prisma } from "@/lib/db/prisma";
 import {
   getAllPlayersForUser,
@@ -34,7 +38,15 @@ export async function createPlayerAction(
   if (nameError) return { error: nameError };
 
   await prisma.player.create({
-    data: { name: name.trim(), userId },
+    data: {
+      name: name.trim(),
+      userId,
+      chartColor:
+        DEFAULT_CHART_COLORS[
+          (await prisma.player.count({ where: { userId } })) %
+            DEFAULT_CHART_COLORS.length
+        ],
+    },
   });
 
   const returnTo = String(formData.get("returnTo") ?? "").trim();
@@ -62,6 +74,24 @@ export async function setRegularMemberAction(
 
   revalidatePath("/admin/players");
   revalidatePath("/games/new");
+}
+
+export async function updatePlayerChartColorAction(
+  playerId: string,
+  chartColor: string,
+): Promise<void> {
+  if (!isValidChartColor(chartColor)) return;
+
+  const userId = await requireUserId();
+  const result = await prisma.player.updateMany({
+    where: { id: playerId, userId },
+    data: { chartColor },
+  });
+  if (result.count === 0) return;
+
+  revalidatePath("/admin/players");
+  revalidatePath("/admin/players/charts");
+  revalidatePath(`/players/${playerId}`);
 }
 
 export async function deletePlayerAction(playerId: string): Promise<void> {

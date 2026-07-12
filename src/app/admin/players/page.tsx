@@ -47,7 +47,7 @@ export default async function AdminPlayersPage({ searchParams }: Props) {
             対局に参加するプレイヤーを登録・管理します
           </p>
           <p className="mt-1 text-xs text-stone-500">
-            プレイヤー名をタップすると通算成績を表示します。「いつものメンバー」にチェックしたプレイヤーは、対局記録時に自動で選択されます
+            プレイヤー名をタップすると通算成績を表示します。「いつものメンバー」にチェックしたプレイヤーは、対局記録時に自動で選択されます。色アイコンでグラフの色を変更できます
           </p>
         </div>
 
@@ -58,9 +58,19 @@ export default async function AdminPlayersPage({ searchParams }: Props) {
         )}
 
         <section className="space-y-3">
-          <h2 className="text-sm font-semibold text-stone-700">
-            登録済みプレイヤー（{players.length}人）
-          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-sm font-semibold text-stone-700">
+              登録済みプレイヤー（{players.length}人）
+            </h2>
+            {players.length > 0 && (
+              <Link
+                href="/admin/players/charts"
+                className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100"
+              >
+                全員のグラフを一括表示
+              </Link>
+            )}
+          </div>
           <PlayerAdminList players={playersWithPt} />
         </section>
 

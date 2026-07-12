@@ -2,10 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import AppShell from "@/components/AppShell";
 import StatsSummary from "@/components/StatsSummary";
-import PlayerPtChart from "@/components/PlayerPtChart";
-import { getPlayerById } from "@/lib/players/actions";
+import FilterablePlayerPtChart from "@/components/FilterablePlayerPtChart";
+import { getPlayerById, getAllPlayers } from "@/lib/players/actions";
 import { getGamesForPlayer } from "@/lib/records/actions";
 import { getPlayerPtHistory, getPlayerRoundData } from "@/lib/records/stats";
+import { resolveChartColor } from "@/lib/players/chartColors";
 import { calcPlayerStats, toDateString } from "@/lib/records/types";
 
 type Props = {
@@ -33,6 +34,12 @@ export default async function PlayerStatsPage({ params }: Props) {
   const roundData = getPlayerRoundData(games, playerId);
   const ptHistory = getPlayerPtHistory(games, playerId);
   const stats = calcPlayerStats(roundData);
+  const allPlayers = await getAllPlayers();
+  const playerIndex = allPlayers.findIndex((item) => item.id === playerId);
+  const chartColor = resolveChartColor(
+    player.chartColor,
+    playerIndex >= 0 ? playerIndex : 0,
+  );
 
   return (
     <AppShell title={`${player.name} の成績`}>
@@ -67,7 +74,7 @@ export default async function PlayerStatsPage({ params }: Props) {
               secondRate={stats.secondRate}
               thirdRate={stats.thirdRate}
             />
-            <PlayerPtChart points={ptHistory} />
+            <FilterablePlayerPtChart points={ptHistory} lineColor={chartColor} />
           </>
         ) : (
           <p className="rounded-xl border border-dashed border-stone-300 px-4 py-8 text-center text-sm text-stone-600">

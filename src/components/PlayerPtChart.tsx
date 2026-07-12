@@ -1,8 +1,15 @@
 import { formatMoney } from "@/lib/records/ruleScoring";
 import type { PlayerPtHistoryPoint } from "@/lib/records/stats";
+import type { ReactNode } from "react";
 
 type Props = {
   points: PlayerPtHistoryPoint[];
+  /** 省略時は「pt推移」。null で非表示 */
+  heading?: string | null;
+  showFooter?: boolean;
+  /** 指定時は累積ptの正負に関わらずこの色を使う */
+  lineColor?: string;
+  periodFilter?: ReactNode;
 };
 
 function chartCoords(
@@ -43,24 +50,31 @@ function yTicks(yMin: number, yMax: number): number[] {
   return ticks;
 }
 
-export default function PlayerPtChart({ points }: Props) {
+export default function PlayerPtChart({
+  points,
+  heading = "pt推移",
+  showFooter = true,
+  lineColor: lineColorProp,
+  periodFilter,
+}: Props) {
   if (points.length === 0) return null;
 
   const width = Math.max(320, points.length * 28);
   const height = 220;
-  const { padding, xAt, yAt, yMin, yMax } = chartCoords(points, width, height);
+  const { padding, chartW, xAt, yAt, yMin, yMax } = chartCoords(points, width, height);
   const zeroY = yAt(0);
   const ticks = yTicks(yMin, yMax);
+  const chartBottom = height - padding.bottom;
+  const positiveBandHeight = Math.max(0, zeroY - padding.top);
+  const negativeBandHeight = Math.max(0, chartBottom - zeroY);
 
   const linePath = points
     .map((p, i) => `${i === 0 ? "M" : "L"} ${xAt(i)} ${yAt(p.cumulativePt)}`)
     .join(" ");
 
-  const areaPath = `${linePath} L ${xAt(points.length - 1)} ${zeroY} L ${xAt(0)} ${zeroY} Z`;
-
   const finalPt = points[points.length - 1].cumulativePt;
-  const lineColor = finalPt >= 0 ? "#059669" : "#dc2626";
-  const fillColor = finalPt >= 0 ? "#d1fae5" : "#fee2e2";
+  const lineColor =
+    lineColorProp ?? (finalPt >= 0 ? "#059669" : "#dc2626");
 
   const dateLabelIndices = points.reduce<number[]>((acc, point, i) => {
     if (i === 0 || point.playedAt !== points[i - 1].playedAt) {
@@ -71,7 +85,11 @@ export default function PlayerPtChart({ points }: Props) {
 
   return (
     <section className="space-y-3">
-      <h2 className="text-sm font-semibold text-stone-700">pt推移</h2>
+      {heading !== null && (
+        <h2 className="text-sm font-semibold text-stone-700">{heading}</h2>
+      )}
+
+      {periodFilter}
 
       <div className="overflow-x-auto rounded-2xl border border-stone-200/80 bg-white p-3 shadow-sm">
         <svg
@@ -82,6 +100,25 @@ export default function PlayerPtChart({ points }: Props) {
           aria-label="半荘ごとの累積pt推移グラフ"
           className="max-w-none"
         >
+          {positiveBandHeight > 0 && (
+            <rect
+              x={padding.left}
+              y={padding.top}
+              width={chartW}
+              height={positiveBandHeight}
+              fill="#d1fae5"
+            />
+          )}
+          {negativeBandHeight > 0 && (
+            <rect
+              x={padding.left}
+              y={zeroY}
+              width={chartW}
+              height={negativeBandHeight}
+              fill="#fee2e2"
+            />
+          )}
+
           {ticks.map((tick) => (
             <g key={tick}>
               <line
@@ -127,7 +164,6 @@ export default function PlayerPtChart({ points }: Props) {
             />
           ))}
 
-          <path d={areaPath} fill={fillColor} opacity={0.65} />
           <path
             d={linePath}
             fill="none"
@@ -165,9 +201,11 @@ export default function PlayerPtChart({ points }: Props) {
           ))}
         </svg>
       </div>
-      <p className="text-xs text-stone-500">
-        ウマ・オカ・レート込みの半荘ptを時系列で累積表示（各点にホバーで詳細）
-      </p>
+      {showFooter && (
+        <p className="text-xs text-stone-500">
+          ウマ・オカ・レート込みの半荘ptを時系列で累積表示（各点にホバーで詳細）
+        </p>
+      )}
     </section>
   );
 }

@@ -1,14 +1,19 @@
 import Link from "next/link";
+import PlayerChartColorPicker from "@/components/PlayerChartColorPicker";
 import PlayerTotalPtDisplay from "@/components/PlayerTotalPtDisplay";
 import RegularMemberCheckbox from "@/components/RegularMemberCheckbox";
+import { resolveChartColor } from "@/lib/players/chartColors";
 import { deletePlayerAction } from "@/lib/players/actions";
+
 type PlayerItem = {
   id: string;
   name: string;
   isRegularMember: boolean;
+  chartColor: string | null;
   totalPt: number;
   _count: { gamePlayers: number };
 };
+
 type Props = {
   players: PlayerItem[];
 };
@@ -24,7 +29,7 @@ export default function PlayerAdminList({ players }: Props) {
 
   return (
     <ul className="space-y-2">
-      {players.map((player) => (
+      {players.map((player, index) => (
         <li
           key={player.id}
           className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-stone-200/80 bg-white px-4 py-3 shadow-sm transition hover:border-emerald-200"
@@ -33,9 +38,7 @@ export default function PlayerAdminList({ players }: Props) {
             href={`/players/${player.id}`}
             className="min-w-0 flex-1 rounded-lg py-0.5 text-left transition hover:bg-emerald-50/60"
           >
-            <span className="font-semibold text-stone-900">
-              {player.name}
-            </span>
+            <span className="font-semibold text-stone-900">{player.name}</span>
             <p className="mt-0.5 text-xs text-stone-500">
               参加 {player._count.gamePlayers} 回
               <span className="ml-2 font-medium text-emerald-700">
@@ -44,6 +47,10 @@ export default function PlayerAdminList({ players }: Props) {
             </p>
           </Link>
           <PlayerTotalPtDisplay totalPt={player.totalPt} />
+          <PlayerChartColorPicker
+            playerId={player.id}
+            color={resolveChartColor(player.chartColor, index)}
+          />
           <RegularMemberCheckbox
             playerId={player.id}
             checked={player.isRegularMember}

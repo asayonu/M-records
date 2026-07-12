@@ -2,10 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ShareShell from "@/components/ShareShell";
 import StatsSummary from "@/components/StatsSummary";
-import PlayerPtChart from "@/components/PlayerPtChart";
+import FilterablePlayerPtChart from "@/components/FilterablePlayerPtChart";
 import { getPlayerPtHistory, getPlayerRoundData } from "@/lib/records/stats";
+import { resolveChartColor } from "@/lib/players/chartColors";
 import { calcPlayerStats, toDateString } from "@/lib/records/types";
 import {
+  getSharedAllPlayers,
   getSharedGamesForPlayer,
   getSharedPlayerById,
   requireShareAccess,
@@ -38,6 +40,12 @@ export default async function SharePlayerStatsPage({ params }: Props) {
   const roundData = getPlayerRoundData(games, playerId);
   const ptHistory = getPlayerPtHistory(games, playerId);
   const stats = calcPlayerStats(roundData);
+  const allPlayers = await getSharedAllPlayers(token);
+  const playerIndex = allPlayers.findIndex((item) => item.id === playerId);
+  const chartColor = resolveChartColor(
+    player.chartColor,
+    playerIndex >= 0 ? playerIndex : 0,
+  );
   const shareBase = `/share/${token}`;
 
   return (
@@ -45,10 +53,10 @@ export default async function SharePlayerStatsPage({ params }: Props) {
       <div className="space-y-8">
         <div>
           <Link
-            href={shareBase}
+            href={`${shareBase}/players`}
             className="text-sm font-medium text-emerald-700 hover:text-emerald-800"
           >
-            ← カレンダー
+            ← プレイヤー欄
           </Link>
           <h1 className="mt-2 text-2xl font-bold text-stone-900">
             {player.name}
@@ -73,7 +81,7 @@ export default async function SharePlayerStatsPage({ params }: Props) {
               secondRate={stats.secondRate}
               thirdRate={stats.thirdRate}
             />
-            <PlayerPtChart points={ptHistory} />
+            <FilterablePlayerPtChart points={ptHistory} lineColor={chartColor} />
           </>
         ) : (
           <p className="rounded-xl border border-dashed border-stone-300 px-4 py-8 text-center text-sm text-stone-600">

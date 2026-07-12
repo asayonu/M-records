@@ -1,3 +1,4 @@
+import { resolveChartColor } from "@/lib/players/chartColors";
 import { resolveGameConfig, type GameRuleConfig } from "@/lib/records/gameConfig";
 import {
   calcAdjustedHanchanDiff,
@@ -214,6 +215,16 @@ export function getPlayerPtHistory(
     });
   }
 
+  if (points.length > 0) {
+    points.unshift({
+      index: 0,
+      label: "0半荘",
+      playedAt: points[0].playedAt,
+      deltaPt: 0,
+      cumulativePt: 0,
+    });
+  }
+
   return points;
 }
 
@@ -223,4 +234,107 @@ export function getPlayerTotalPt(
 ): number {
   const points = getPlayerPtHistory(games, playerId);
   return points.length > 0 ? points[points.length - 1].cumulativePt : 0;
+}
+
+export type CombinedPtHistoryPoint = {
+  globalIndex: number;
+  cumulativePt: number;
+  label: string;
+  deltaPt: number;
+};
+
+export type CombinedPtSeries = {
+  playerId: string;
+  playerName: string;
+  chartColor: string;
+  points: CombinedPtHistoryPoint[];
+};
+
+export function getCombinedPlayerPtSeries(
+  games: GameWithDetails[],
+  players: { id: string; name: string; chartColor: string | null }[],
+): { series: CombinedPtSeries[]; totalHanchan: number; hanchanDates: string[] } {
+  const playerIds = new Set(players.map((player) => player.id));
+  const cumulative = new Map<string, number>();
+  const pointsByPlayer = new Map<string, CombinedPtHistoryPoint[]>();
+  for (const player of players) {
+    cumulative.set(player.id, 0);
+    pointsByPlayer.set(player.id, []);
+  }
+
+  const sortedGames = [...games].sort((a, b) => {
+    const byDate = a.playedAt.getTime() - b.playedAt.getTime();
+    if (byDate !== 0) return byDate;
+    return a.createdAt.getTime() - b.createdAt.getTime();
+  });
+
+  let globalIndex = 0;
+  const hanchanDates: string[] = [];
+
+  for (const game of sortedGames) {
+    const config = resolveGameConfig(game);
+    const rounds = extractRoundScores(game, config.playerCount);
+    const dateStr = toDateString(game.playedAt);
+    const flags = { useUma: config.useUma, useOka: config.useOka };
+
+    for (const [roundIndex, round] of rounds.entries()) {
+      hanchanDates[globalIndex] = dateStr;
+
+      for (const gp of game.players) {
+        if (!playerIds.has(gp.playerId)) continue;
+
+        const adjusted = calcAdjustedHanchanDiff(
+          round.scores,
+          gp.seat,
+          config.startingScore,
+          config.scoring,
+          flags,
+          config.playerCount,
+        );
+        const deltaPt = calcMoneyFromPoints(
+          adjusted,
+          config.scoring.ratePer1000,
+        );
+        const nextTotal = (cumulative.get(gp.playerId) ?? 0) + deltaPt;
+        cumulative.set(gp.playerId, nextTotal);
+
+        pointsByPlayer.get(gp.playerId)!.push({
+          globalIndex,
+          cumulativePt: Math.round(nextTotal * 10) / 10,
+          label: `${dateStr.slice(5).replace("-", "/")} ${roundIndex + 1}半荘`,
+          deltaPt: Math.round(deltaPt * 10) / 10,
+        });
+      }
+      globalIndex += 1;
+    }
+  }
+
+  if (globalIndex > 0) {
+    hanchanDates.unshift(hanchanDates[0]);
+
+    for (const player of players) {
+      const playerPoints = pointsByPlayer.get(player.id)!;
+      if (playerPoints.length === 0) continue;
+      for (const point of playerPoints) {
+        point.globalIndex += 1;
+      }
+      playerPoints.unshift({
+        globalIndex: 0,
+        cumulativePt: 0,
+        label: "0半荘",
+        deltaPt: 0,
+      });
+    }
+  }
+
+  return {
+    series: players.map((player, index) => ({
+      playerId: player.id,
+      playerName: player.name,
+      chartColor: resolveChartColor(player.chartColor, index),
+      points: pointsByPlayer.get(player.id) ?? [],
+    })),
+    totalHanchan: globalIndex > 0 ? globalIndex + 1 : 0,
+    hanchanDates,
+  };
 }

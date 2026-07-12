@@ -40,14 +40,17 @@ export default async function ShareCalendarPage({ params, searchParams }: Props)
   return (
     <ShareShell token={token} title="対局カレンダー">
       <div className="space-y-6">
-        <div>
-          <p className="text-xs font-medium tracking-wider text-emerald-700 uppercase">
-            Mahjong Records
-          </p>
-          <h1 className="mt-1 text-2xl font-bold text-stone-900">
-            対局カレンダー
-          </h1>
-          <p className="mt-1 text-sm text-stone-500">閲覧専用 · 編集できません</p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-medium tracking-wider text-emerald-700 uppercase">
+              Mahjong Records
+            </p>
+            <h1 className="mt-1 text-2xl font-bold text-stone-900">
+              対局カレンダー
+            </h1>
+            <p className="mt-1 text-sm text-stone-500">閲覧専用 · 編集できません</p>
+          </div>
+          <ShareNavLinks token={token} align="end" />
         </div>
 
         <Calendar
@@ -57,14 +60,13 @@ export default async function ShareCalendarPage({ params, searchParams }: Props)
           basePath={basePath}
         />
 
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex justify-center">
           <Link
             href={`${basePath}/dates/${todayStr}`}
             className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
           >
             今日の対局を見る
           </Link>
-          <ShareNavLinks token={token} />
         </div>
       </div>
     </ShareShell>

@@ -45,7 +45,22 @@ export default async function SharePlayersPage({ params }: Props) {
             登録済み {players.length} 人 · 名前をタップすると通算成績を表示
           </p>
         </div>
-        <PlayerShareList players={playersWithPt} shareBase={basePath} />
+        <section className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-sm font-semibold text-stone-700">
+              登録済みプレイヤー（{players.length}人）
+            </h2>
+            {players.length > 0 && (
+              <Link
+                href={`${basePath}/charts`}
+                className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100"
+              >
+                全員のグラフを一括表示
+              </Link>
+            )}
+          </div>
+          <PlayerShareList players={playersWithPt} shareBase={basePath} />
+        </section>
       </div>
     </ShareShell>
   );
