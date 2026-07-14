@@ -18,7 +18,7 @@ function chartCoords(
   width: number,
   height: number,
 ) {
-  const padding = { top: 16, right: 16, bottom: 36, left: 48 };
+  const padding = { top: 16, right: 72, bottom: 36, left: 48 };
   const chartW = width - padding.left - padding.right;
   const chartH = height - padding.top - padding.bottom;
 
@@ -74,8 +74,15 @@ export default function PlayerPtChart({
     .join(" ");
 
   const finalPt = points[points.length - 1].cumulativePt;
+  const lastIndex = points.length - 1;
   const lineColor =
     lineColorProp ?? (finalPt >= 0 ? "#059669" : "#dc2626");
+  const finalPtFillClass =
+    finalPt > 0
+      ? "fill-emerald-600"
+      : finalPt < 0
+        ? "fill-red-600"
+        : "fill-stone-600";
 
   const dateLabelIndices = points.reduce<number[]>((acc, point, i) => {
     if (i === 0 || point.playedAt !== points[i - 1].playedAt) {
@@ -189,6 +196,16 @@ export default function PlayerPtChart({
               </title>
             </circle>
           ))}
+
+          <text
+            x={xAt(lastIndex) + 8}
+            y={yAt(finalPt)}
+            textAnchor="start"
+            dominantBaseline="middle"
+            className={`text-[11px] font-semibold tabular-nums ${finalPtFillClass}`}
+          >
+            {formatMoney(finalPt)}
+          </text>
 
           {dateLabelIndices.map((i) => (
             <text
