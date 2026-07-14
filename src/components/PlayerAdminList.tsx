@@ -36,42 +36,46 @@ export default function PlayerAdminList({ players }: Props) {
         {players.map((player, index) => (
           <li
             key={player.id}
-            className="flex items-center gap-3 rounded-xl border border-stone-200/80 bg-white px-4 py-3.5 shadow-sm transition hover:border-emerald-200"
+            className="flex items-center gap-4 rounded-xl border border-stone-200/80 bg-white px-4 py-4 shadow-sm transition hover:border-emerald-200"
           >
             <Link
               href={`/players/${player.id}`}
-              className="flex min-w-[10rem] items-center gap-2 rounded-lg py-0.5 transition hover:bg-emerald-50/60"
+              className="flex min-w-[8rem] flex-col gap-1 rounded-lg py-1 transition hover:bg-emerald-50/60"
             >
-              <span className="whitespace-nowrap font-semibold text-stone-900">
+              <span className="whitespace-nowrap text-lg font-semibold text-stone-900">
                 {player.name}
               </span>
-              <span className="shrink-0 whitespace-nowrap text-xs font-medium text-emerald-700">
+              <span className="whitespace-nowrap text-sm font-medium text-emerald-700">
                 成績を見る →
               </span>
             </Link>
-            <PlayerTotalPtDisplay totalPt={player.totalPt} />
-            <PlayerChartColorPicker
-              playerId={player.id}
-              color={resolveChartColor(player.chartColor, index)}
-            />
-            <RegularMemberCheckbox
-              playerId={player.id}
-              checked={player.isRegularMember}
-            />
-            <form action={deletePlayerAction.bind(null, player.id)}>
-              <button
-                type="submit"
-                disabled={player._count.gamePlayers > 0}
-                className="shrink-0 whitespace-nowrap rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
-                title={
-                  player._count.gamePlayers > 0
-                    ? "対局記録があるプレイヤーは削除できません"
-                    : undefined
-                }
-              >
-                削除
-              </button>
-            </form>
+            <PlayerTotalPtDisplay totalPt={player.totalPt} size="large" />
+            <div className="ml-auto flex shrink-0 items-center gap-3">
+              <PlayerChartColorPicker
+                playerId={player.id}
+                color={resolveChartColor(player.chartColor, index)}
+                size="large"
+              />
+              <RegularMemberCheckbox
+                playerId={player.id}
+                checked={player.isRegularMember}
+                size="large"
+              />
+              <form action={deletePlayerAction.bind(null, player.id)}>
+                <button
+                  type="submit"
+                  disabled={player._count.gamePlayers > 0}
+                  className="shrink-0 whitespace-nowrap rounded-lg border border-red-200 px-3.5 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  title={
+                    player._count.gamePlayers > 0
+                      ? "対局記録があるプレイヤーは削除できません"
+                      : undefined
+                  }
+                >
+                  削除
+                </button>
+              </form>
+            </div>
           </li>
         ))}
       </ul>
