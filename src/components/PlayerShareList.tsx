@@ -26,12 +26,12 @@ export default function PlayerShareList({ players, shareBase }: Props) {
   }
 
   return (
-    <ul className="space-y-2">
+    <ul className="space-y-4">
       {players.map((player) => (
         <li key={player.id}>
           <Link
             href={playerHref(player.id)}
-            className="flex items-center justify-between gap-3 rounded-xl border border-stone-200/80 bg-white px-4 py-3 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50/30"
+            className="flex items-center justify-between gap-3 rounded-xl border border-stone-200/80 bg-white px-4 py-3.5 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50/30"
           >
             <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
               <span className="truncate font-semibold text-stone-900">

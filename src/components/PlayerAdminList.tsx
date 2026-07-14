@@ -32,11 +32,11 @@ export default function PlayerAdminList({ players }: Props) {
 
   return (
     <ScaleToFit>
-      <ul className="inline-block min-w-[640px] space-y-2">
+      <ul className="inline-block min-w-[640px] space-y-4">
         {players.map((player, index) => (
           <li
             key={player.id}
-            className="flex items-center gap-3 rounded-xl border border-stone-200/80 bg-white px-4 py-3 shadow-sm transition hover:border-emerald-200"
+            className="flex items-center gap-3 rounded-xl border border-stone-200/80 bg-white px-4 py-3.5 shadow-sm transition hover:border-emerald-200"
           >
             <Link
               href={`/players/${player.id}`}
