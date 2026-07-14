@@ -1,5 +1,6 @@
 import { formatMoney } from "@/lib/records/ruleScoring";
 import type { PlayerPtHistoryPoint } from "@/lib/records/stats";
+import ScaleToFit from "@/components/ScaleToFit";
 import type { ReactNode } from "react";
 
 type Props = {
@@ -91,15 +92,16 @@ export default function PlayerPtChart({
 
       {periodFilter}
 
-      <div className="overflow-x-auto rounded-2xl border border-stone-200/80 bg-white p-3 shadow-sm">
-        <svg
-          width={width}
-          height={height}
-          viewBox={`0 0 ${width} ${height}`}
-          role="img"
-          aria-label="半荘ごとの累積pt推移グラフ"
-          className="max-w-none"
-        >
+      <div className="rounded-2xl border border-stone-200/80 bg-white p-3 shadow-sm">
+        <ScaleToFit>
+          <svg
+            width={width}
+            height={height}
+            viewBox={`0 0 ${width} ${height}`}
+            role="img"
+            aria-label="半荘ごとの累積pt推移グラフ"
+            className="block"
+          >
           {positiveBandHeight > 0 && (
             <rect
               x={padding.left}
@@ -199,7 +201,8 @@ export default function PlayerPtChart({
               {points[i].playedAt.slice(5).replace("-", "/")}
             </text>
           ))}
-        </svg>
+          </svg>
+        </ScaleToFit>
       </div>
       {showFooter && (
         <p className="text-xs text-stone-500">

@@ -33,14 +33,13 @@ export default function PlayerShareList({ players, shareBase }: Props) {
             href={playerHref(player.id)}
             className="flex items-center justify-between gap-3 rounded-xl border border-stone-200/80 bg-white px-4 py-3 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50/30"
           >
-            <div className="min-w-0 flex-1">
-              <span className="font-semibold text-stone-900">{player.name}</span>
-              <p className="mt-0.5 text-xs text-stone-500">
-                参加 {player._count.gamePlayers} 試合
-                <span className="ml-2 font-medium text-emerald-700">
-                  成績を見る →
-                </span>
-              </p>
+            <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
+              <span className="truncate font-semibold text-stone-900">
+                {player.name}
+              </span>
+              <span className="shrink-0 whitespace-nowrap text-xs font-medium text-emerald-700">
+                成績を見る →
+              </span>
             </div>
             <PlayerTotalPtDisplay totalPt={player.totalPt} />
           </Link>

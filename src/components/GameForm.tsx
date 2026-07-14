@@ -127,13 +127,18 @@ export default function GameForm({ date, players, rules, edit }: Props) {
 
   const liveTotals = useMemo(() => {
     if (!config || scores.length === 0) return null;
-    const completeRows = scores.filter(
-      (row) =>
-        row.length === config.playerCount &&
-        row.every((score) => score >= 0),
-    );
-    if (completeRows.length === 0) return null;
-    return computeScoresTotals(completeRows, config);
+    const validRows = scores.filter((row) => {
+      if (
+        row.length !== config.playerCount ||
+        !row.every((score) => score >= 0)
+      ) {
+        return false;
+      }
+      const sum = row.reduce((a, b) => a + b, 0);
+      return sum === config.totalScorePerRound;
+    });
+    if (validRows.length === 0) return null;
+    return computeScoresTotals(validRows, config);
   }, [scores, config]);
 
   function switchRule(nextRuleId: string) {
@@ -370,7 +375,7 @@ export default function GameForm({ date, players, rules, edit }: Props) {
                   const rowComplete = row.every((score) => score >= 0);
                   const sumOk =
                     rowComplete && sum === config.totalScorePerRound;
-                  const rowPts = rowComplete
+                  const rowPts = sumOk
                     ? row.map((_, seat) =>
                         calcMoneyFromPoints(
                           calcAdjustedHanchanDiff(
@@ -390,7 +395,9 @@ export default function GameForm({ date, players, rules, edit }: Props) {
                       key={roundIndex}
                       className={`bg-white ${liveTotals && roundIndex === scores.length - 1 ? "" : "border-b border-stone-300"}`}
                     >
-                      <td className="px-1 py-2 text-center text-xs font-medium text-stone-700">
+                      <td
+                        className={`px-1 text-center text-xs font-medium text-stone-700 ${sumOk ? "py-2" : "py-3"}`}
+                      >
                         {roundIndex + 1}
                       </td>
                       {row.map((score, seat) => {
@@ -398,41 +405,52 @@ export default function GameForm({ date, players, rules, edit }: Props) {
                         return (
                           <td
                             key={seat}
-                            className="border-l-2 border-stone-800 px-2 py-2 text-center"
+                            className={`border-l-2 border-stone-800 text-center ${sumOk ? "px-2 py-2" : "p-2"}`}
                           >
                             <input
                               type="hidden"
                               name={`round_${roundIndex}_score_${seat}`}
                               value={score}
                             />
-                            <div className="flex items-center justify-center gap-1">
-                              <input
-                                type="number"
-                                min={0}
-                                step={1}
-                                placeholder="—"
-                                value={scoreShortInputValue(score)}
-                                onChange={(e) =>
-                                  updateScore(roundIndex, seat, e.target.value)
-                                }
-                                className="w-[3.1rem] shrink-0 rounded-lg border border-stone-300 px-1 py-1.5 text-center tabular-nums outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-200"
-                              />
-                              <span
-                                className={`w-[2.75rem] shrink-0 text-center text-[10px] font-semibold leading-tight ${
-                                  hanchanPt === null
-                                    ? "text-transparent"
-                                    : pointDiffToneClass(hanchanPt)
-                                }`}
-                                aria-hidden={hanchanPt === null}
-                              >
-                                {hanchanPt === null ? "—" : formatMoney(hanchanPt)}
-                              </span>
-                            </div>
+                            {sumOk ? (
+                              <div className="flex items-center justify-center gap-1">
+                                <input
+                                  type="number"
+                                  min={0}
+                                  step={1}
+                                  placeholder="—"
+                                  value={scoreShortInputValue(score)}
+                                  onChange={(e) =>
+                                    updateScore(roundIndex, seat, e.target.value)
+                                  }
+                                  className="w-[3.1rem] shrink-0 rounded-lg border border-stone-300 px-1 py-1.5 text-center tabular-nums outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-200"
+                                />
+                                <span
+                                  className={`w-[2.75rem] shrink-0 text-center text-[10px] font-semibold leading-tight ${pointDiffToneClass(hanchanPt!)}`}
+                                >
+                                  {formatMoney(hanchanPt!)}
+                                </span>
+                              </div>
+                            ) : (
+                              <div className="flex min-h-[3.5rem] items-center justify-center">
+                                <input
+                                  type="number"
+                                  min={0}
+                                  step={1}
+                                  placeholder="—"
+                                  value={scoreShortInputValue(score)}
+                                  onChange={(e) =>
+                                    updateScore(roundIndex, seat, e.target.value)
+                                  }
+                                  className="w-full rounded-lg border border-stone-300 px-2 py-3 text-center text-[clamp(1.25rem,6vw,2rem)] font-semibold tabular-nums outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+                                />
+                              </div>
+                            )}
                           </td>
                         );
                       })}
                       <td
-                        className={`border-l-2 border-stone-800 px-0.5 py-2 text-center text-[11px] font-medium tabular-nums ${!rowComplete ? "text-stone-400" : sumOk ? "text-stone-500" : "text-red-600"}`}
+                        className={`border-l-2 border-stone-800 px-0.5 text-center text-[11px] font-medium tabular-nums ${sumOk ? "py-2" : "py-3"} ${!rowComplete ? "text-stone-400" : sumOk ? "text-stone-500" : "text-red-600"}`}
                       >
                         {rowComplete ? formatScoreShort(sum) : "—"}
                       </td>

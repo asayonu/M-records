@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ScaleToFit from "@/components/ScaleToFit";
 import { formatMoney } from "@/lib/records/ruleScoring";
 import type { CombinedPtSeries } from "@/lib/records/stats";
 import { pointDiffToneClass } from "@/lib/records/types";
@@ -125,15 +126,16 @@ export default function AllPlayersPtChart({
       <div className="flex items-start gap-3 sm:gap-4">
         <div className="min-w-0 flex-1 space-y-2">
           {periodFilter}
-          <div className="overflow-x-auto rounded-2xl border border-stone-200/80 bg-white p-3 shadow-sm">
-          <svg
-            width={width}
-            height={height}
-            viewBox={`0 0 ${width} ${height}`}
-            role="img"
-            aria-label="全プレイヤーの累積pt推移グラフ"
-            className="max-w-none"
-          >
+          <div className="rounded-2xl border border-stone-200/80 bg-white p-3 shadow-sm">
+            <ScaleToFit>
+              <svg
+                width={width}
+                height={height}
+                viewBox={`0 0 ${width} ${height}`}
+                role="img"
+                aria-label="全プレイヤーの累積pt推移グラフ"
+                className="block"
+              >
           {positiveBandHeight > 0 && (
             <rect
               x={padding.left}
@@ -244,8 +246,9 @@ export default function AllPlayersPtChart({
             >
               {hanchanDates[index].slice(5).replace("-", "/")}
             </text>
-          ))}
-          </svg>
+              ))}
+              </svg>
+            </ScaleToFit>
           </div>
         </div>
 
